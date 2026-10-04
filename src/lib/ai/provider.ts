@@ -16,7 +16,7 @@
 import { keyPool, AllKeysExhaustedError } from "./key-pool";
 import { createZaiStream, type PeekableStream } from "./zai-adapter";
 import { createGroqStream } from "./groq-adapter";
-import { buildPrompt, appendDisclaimer, RETRIEVAL_CONFIDENCE_THRESHOLD, type ChatMsg, type RetrievedChunk } from "./prompts";
+import { buildPrompt, appendDisclaimer, DISCLAIMER, RETRIEVAL_CONFIDENCE_THRESHOLD, FALLBACK_RESPONSE, type ChatMsg, type RetrievedChunk } from "./prompts";
 import { validateCitations } from "./citations";
 import { pickModel } from "./models";
 import { logger } from "@/lib/utils/logger";
@@ -145,8 +145,49 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
   }
 
   await analytics.capture({ name: "groq.all_keys_exhausted", properties: { model } });
-  const friendly = "I'm unable to answer right now because all my AI providers are temporarily busy. " +
-    "Please try again in a moment. For urgent legal matters, call NALSA at 15100 (free legal aid).";
-  onToken(friendly);
-  throw new AllKeysExhaustedError(friendly);
+
+  // LLM fallback: generate a structured answer from the RAG context directly.
+  // This ensures the user ALWAYS gets a useful answer, even when all LLM
+  // providers are down (Groq 403, z-ai not available on Vercel, etc.)
+  const fallbackText = generateRagFallback(message, context);
+  onToken(fallbackText);
+  throw new AllKeysExhaustedError(fallbackText);
+}
+
+/**
+ * Generate a useful answer from RAG context when all LLM providers fail.
+ * This formats the retrieved chunks into a readable answer — no LLM needed.
+ */
+function generateRagFallback(
+  query: string,
+  context: RetrievedChunk[]
+): string {
+  if (context.length === 0) {
+    return FALLBACK_RESPONSE + DISCLAIMER;
+  }
+
+  // Build a structured answer from the top retrieved chunks
+  let answer = `Here's what I found based on verified legal sources:\n\n`;
+
+  // Use the top 3 chunks
+  const topChunks = context.slice(0, 3);
+  for (let i = 0; i < topChunks.length; i++) {
+    const chunk = topChunks[i];
+    const actName = chunk.actName || "Relevant law";
+    const sectionNo = chunk.sectionNo ? ` §${chunk.sectionNo}` : "";
+    const sourceUrl = chunk.sourceUrl ? `\n📖 Source: ${chunk.sourceUrl}` : "";
+
+    // Extract the most relevant portion (first 500 chars of content)
+    const content = chunk.content.slice(0, 500).trim();
+
+    answer += `**${i + 1}. ${actName}${sectionNo}**\n\n${content}${sourceUrl}\n\n---\n\n`;
+  }
+
+  answer += `**Your Rights & Next Steps:**\n\n`;
+  answer += `• If this is an emergency, call **112** (unified emergency) or **100** (police)\n`;
+  answer += `• For free legal aid, call **NALSA at 15100** or visit nalsa.gov.in\n`;
+  answer += `• Free legal aid is available for women, children, SC/ST, and anyone earning below ₹5 lakh/year\n\n`;
+
+  answer += DISCLAIMER;
+  return answer;
 }

@@ -17,7 +17,7 @@ export interface RetrievedChunk {
   score: number;
 }
 
-const DISCLAIMER =
+export const DISCLAIMER =
   "\n\n---\n*Nyaya provides legal information, not legal advice. " +
   "This is not a substitute for a licensed advocate. " +
   "Verify with official sources for your specific situation.*";
