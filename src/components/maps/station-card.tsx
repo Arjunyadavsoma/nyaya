@@ -33,6 +33,8 @@ export interface StationCardProps {
   userLocation: { lat: number; lng: number } | null;
   /** Visual emphasis — used when this is the closest station. */
   highlight?: boolean;
+  /** Called when the user clicks "Navigate" — opens the map app chooser */
+  onNavigate?: () => void;
 }
 
 // LocalStorage key for the "Save offline" feature. Stored as a JSON map of
@@ -73,6 +75,7 @@ export function StationCard({
   station,
   userLocation,
   highlight,
+  onNavigate,
 }: StationCardProps) {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -267,17 +270,29 @@ export function StationCard({
             </a>
           </Button>
         )}
-        <Button asChild size="sm" variant="outline">
-          <a
-            href={navigateUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Navigate to ${station.name} via OpenStreetMap`}
+        {onNavigate ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onNavigate}
+            aria-label={`Navigate to ${station.name}`}
           >
             <Navigation className="h-4 w-4" />
             Navigate
-          </a>
-        </Button>
+          </Button>
+        ) : (
+          <Button asChild size="sm" variant="outline">
+            <a
+              href={navigateUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Navigate to ${station.name} via OpenStreetMap`}
+            >
+              <Navigation className="h-4 w-4" />
+              Navigate
+            </a>
+          </Button>
+        )}
         <Button
           size="sm"
           variant="outline"
