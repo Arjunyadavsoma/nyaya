@@ -8,7 +8,7 @@ import { ChatInput } from "./chat-input";
 import { ChatHistory } from "./chat-history";
 import { ModeSwitcher, type ChatMode } from "./mode-switcher";
 import { DisclaimerBanner } from "@/components/common/disclaimer";
-import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldAlert } from "lucide-react";
+import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldAlert, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ const SUGGESTED = [
   { q: "What are my fundamental rights under the Constitution?", icon: Scale, category: "Constitutional" },
   { q: "What should I do if I'm arrested by the police?", icon: ShieldAlert, category: "Criminal" },
   { q: "How do I file an FIR online?", icon: FileSearch, category: "Procedure" },
-  { q: "What are my rights as a tenant?", icon: Scale, category: "Property" },
+  { q: "What are my rights as a tenant?", icon: BookOpen, category: "Property" },
 ];
 
 export function ChatWindow() {
@@ -63,7 +63,7 @@ export function ChatWindow() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] lg:h-[calc(100vh-6rem)]">
+    <div className="flex h-[100dvh] lg:h-[calc(100vh-0rem)]">
       {/* History sidebar */}
       <ChatHistory
         currentSessionId={sessionId}
@@ -74,44 +74,42 @@ export function ChatWindow() {
       />
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Professional top bar */}
-        <div className="border-b border-border bg-card/50 backdrop-blur">
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
+        {/* Professional header bar */}
+        <div className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
           <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <Button
                 variant="ghost"
                 size="icon"
-                className="tap-target h-8 w-8 text-muted-foreground"
+                className="tap-target h-9 w-9 text-muted-foreground shrink-0"
                 onClick={() => setHistoryOpen((o) => !o)}
                 aria-label="Toggle history"
-                title="Toggle history"
               >
                 <PanelLeft className="h-4 w-4" />
               </Button>
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shrink-0">
-                <Scale className="h-4 w-4 text-primary-foreground" />
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-sm">
+                <Scale className="h-5 w-5 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-sm flex items-center gap-1.5">
+                <div className="font-bold text-sm flex items-center gap-1.5">
                   Nyaya AI
-                  <span className="inline-block w-2 h-2 rounded-full bg-success" title="Online" />
+                  <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" title="Online" />
                 </div>
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {isStreaming ? "Typing…" : "Ready to help · Powered by 26,687 SC judgments"}
+                  {isStreaming ? "●●● Typing…" : "Legal Assistant · 26,687 SC judgments"}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <ModeSwitcher value={mode} onChange={setMode} />
               <Button
                 variant="ghost"
                 size="icon"
-                className="tap-target text-muted-foreground hover:text-emergency"
+                className="tap-target h-9 w-9 text-muted-foreground hover:text-emergency"
                 onClick={clear}
                 disabled={messages.length === 0 || isStreaming}
                 aria-label="Clear conversation"
-                title="Clear conversation"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -120,7 +118,7 @@ export function ChatWindow() {
 
           {/* Retrieval sources strip */}
           {retrieval.length > 0 && (
-            <div className="px-3 pb-2 border-t border-border/50 bg-muted/20">
+            <div className="px-3 pb-2 border-t border-border/50 bg-muted/30">
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-1.5">
                 <FileSearch className="h-3 w-3 shrink-0" />
                 <span className="font-medium">Retrieved {retrieval.length} source{retrieval.length !== 1 ? "s" : ""}</span>
@@ -130,8 +128,6 @@ export function ChatWindow() {
                       <Zap className="h-2.5 w-2.5 text-accent" />
                       ~{usage.approxTokens} tokens
                     </span>
-                    <span className="text-muted-foreground/50">·</span>
-                    <span title="Answer length">{usage.answerLength} chars</span>
                   </span>
                 )}
               </div>
@@ -147,16 +143,14 @@ export function ChatWindow() {
           )}
         </div>
 
-        {/* Messages — or welcome state when empty */}
+        {/* Messages — or welcome state */}
         {messages.length === 0 ? (
           <div className="flex-1 overflow-y-auto nyaya-scroll px-4 py-6">
             <div className="max-w-lg mx-auto">
               <div className="text-center space-y-5 mb-6">
-                {/* Logo */}
                 <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg mx-auto">
                   <Scale className="h-8 w-8 text-primary-foreground" />
                 </div>
-                {/* Title */}
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Ask Nyaya</h2>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -166,7 +160,6 @@ export function ChatWindow() {
                   </p>
                 </div>
               </div>
-              {/* Suggested prompts */}
               <div className="grid gap-2 text-left">
                 {SUGGESTED.map((s) => {
                   const Icon = s.icon;

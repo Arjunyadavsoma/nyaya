@@ -9,23 +9,23 @@ import { DisclaimerBanner } from "@/components/common/disclaimer";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Hide footer on chat page (chat needs full viewport height)
-  const hideFooter = pathname === "/chat";
+  // Hide footer + bottom bar on chat page (chat needs full viewport)
+  const isChat = pathname === "/chat";
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-[100dvh] flex flex-col">
       {/* Desktop: sidebar + main */}
       <div className="flex flex-1">
         <DesktopSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <Header />
-          <main className="flex-1 pb-20 lg:pb-0">
+          {!isChat && <Header />}
+          <main className="flex-1 pb-14 lg:pb-0">
             {children}
           </main>
-          {!hideFooter && <Footer />}
+          {!isChat && <Footer />}
         </div>
       </div>
-      <BottomTabBar />
+      {!isChat && <BottomTabBar />}
     </div>
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Bot, User, Scale } from "lucide-react";
+import { Bot, User, Scale, ShieldCheck } from "lucide-react";
 import type { ChatMessage } from "@/hooks/use-chat";
 import { CitationCard, BookmarkButton } from "./citation-card";
 import { MessageActions } from "./message-actions";
 import { EmergencyResponse } from "./emergency-response";
 import { DisclaimerStrip } from "@/components/common/disclaimer";
-import { cn } from "@/lib/utils";
 
 interface ChatMessageItemProps {
   msg: ChatMessage;
@@ -41,15 +40,12 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
 
   if (isUser) {
     return (
-      <div ref={ref} className="flex gap-3 justify-end group">
-        <div className="flex flex-col items-end max-w-[80%]">
+      <div ref={ref} className="flex gap-2.5 justify-end group animate-in fade-in slide-in-from-bottom-1 duration-300">
+        <div className="flex flex-col items-end max-w-[85%] sm:max-w-[75%]">
           <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2.5 shadow-sm">
             <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {renderContent(msg.content)}
             </div>
-          </div>
-          <div className="flex items-center gap-1 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[10px] text-muted-foreground">You</span>
           </div>
         </div>
         <div className="shrink-0 h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -60,27 +56,26 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
   }
 
   return (
-    <div ref={ref} className="flex gap-3 group">
-      <div className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-sm">
+    <div ref={ref} className="flex gap-2.5 group animate-in fade-in slide-in-from-bottom-1 duration-300">
+      <div className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-sm">
         <Scale className="h-4 w-4 text-accent-foreground" />
       </div>
-      <div className="flex flex-col items-start max-w-[80%] min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-semibold text-foreground">Nyaya AI</span>
-          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-            <Bot className="h-2.5 w-2.5" />
-            Legal Assistant
+      <div className="flex flex-col items-start max-w-[85%] sm:max-w-[75%] min-w-0">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-xs font-bold text-foreground">Nyaya AI</span>
+          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-muted/50 rounded-full px-1.5 py-0.5">
+            <ShieldCheck className="h-2.5 w-2.5" />
+            Verified
           </span>
         </div>
         <div className="rounded-2xl rounded-tl-sm bg-card border border-border px-4 py-2.5 shadow-sm w-full">
-          {/* Emergency playbook — special card UI */}
           {msg.playbook ? (
             <EmergencyResponse playbook={msg.playbook as Parameters<typeof EmergencyResponse>[0]["playbook"]} />
           ) : (
             <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {renderContent(msg.content)}
               {msg.pending && (
-                <span className="inline-flex items-center gap-1 ml-1">
+                <span className="inline-flex items-center gap-1 ml-1 align-middle">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: "0.2s" }} />
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: "0.4s" }} />
@@ -89,7 +84,7 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
             </div>
           )}
         </div>
-        {!msg.pending && msg.content && (
+        {!msg.pending && msg.content && !msg.playbook && (
           <MessageActions
             messageId={msg.id}
             content={msg.content}
@@ -104,10 +99,10 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
             }
           />
         )}
-        {msg.citations && msg.citations.length > 0 && (
+        {msg.citations && msg.citations.length > 0 && !msg.playbook && (
           <CitationCard citations={msg.citations} />
         )}
-        {!msg.pending && msg.content && (
+        {!msg.pending && msg.content && !msg.playbook && (
           <DisclaimerStrip className="mt-1" />
         )}
       </div>
@@ -129,7 +124,7 @@ export function ChatMessageList({
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   return (
-    <div className="flex-1 overflow-y-auto nyaya-scroll px-4 py-4 space-y-5">
+    <div className="flex-1 overflow-y-auto nyaya-scroll px-3 sm:px-4 py-4 space-y-4">
       {messages.map((m, i) => (
         <ChatMessageItem
           key={m.id ?? i}
