@@ -1,18 +1,18 @@
 /**
  * Model routing. Read from env so models can be swapped without code changes.
  *
- * Groq deprecated several model names in late 2024. The current production
- * model names as of 2025 are:
- *   - llama-3.3-70b-versatile (may show as 404 on some accounts — use fallback)
- *   - llama-3.1-8b-instant
+ * Groq model availability (as of Oct 2025):
+ * - llama-3.3-70b-versatile → 404 on Developer (free) plan ("Contact Sales")
+ * - llama-3.1-8b-instant → 404 on Developer (free) plan ("Contact Sales")
+ * - openai/gpt-oss-120b → ✅ Available on Developer plan ($0.15/$0.60 per 1M tokens)
+ * - openai/gpt-oss-20b → ✅ Available on Developer plan ($0.075/$0.30 per 1M tokens)
  *
- * If the primary model returns 404, the KeyPool will mark the key as
- * unhealthy and the RAG fallback will generate a useful answer from
- * retrieved context.
+ * Default: openai/gpt-oss-120b (best quality, 500 t/s)
+ * Fast: openai/gpt-oss-20b (faster, 1000 t/s)
  */
 export const MODELS = {
-  primary: process.env.GROQ_MODEL_PRIMARY ?? "llama-3.1-8b-instant",
-  fast: process.env.GROQ_MODEL_FAST ?? "llama-3.1-8b-instant",
+  primary: process.env.GROQ_MODEL_PRIMARY ?? "openai/gpt-oss-120b",
+  fast: process.env.GROQ_MODEL_FAST ?? "openai/gpt-oss-20b",
 } as const;
 
 export type ModelName = (typeof MODELS)[keyof typeof MODELS];
