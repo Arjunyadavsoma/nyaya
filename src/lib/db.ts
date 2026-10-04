@@ -82,7 +82,6 @@ class LibSqlDb implements DbLike {
 
   private async rawQuery(table: string, opts?: { where?: Record<string, unknown>; orderBy?: Record<string, string>; take?: number; skip?: number; include?: Record<string, unknown> }): Promise<Record<string, unknown>[]> {
     let sql = `SELECT * FROM "${table}"`;
-    const args: unknown[] = [];
     const w = this.buildWhere(opts?.where);
     if (w.sql) sql += ` WHERE ${w.sql}`;
     if (opts?.orderBy) {
@@ -92,7 +91,7 @@ class LibSqlDb implements DbLike {
       sql += ` ORDER BY "createdAt" DESC`;
     }
     if (opts?.take) { sql += ` LIMIT ${opts.take}`; if (opts?.skip) sql += ` OFFSET ${opts.skip}`; }
-    const r = await this.client.execute({ sql, args });
+    const r = await this.client.execute({ sql, args: w.args });
     return r.rows.map(row => {
       const obj: Record<string, unknown> = {};
       for (const col of r.columns) obj[col] = (row as Record<string, unknown>)[col];
@@ -102,10 +101,9 @@ class LibSqlDb implements DbLike {
 
   private async rawCount(table: string, where?: Record<string, unknown>): Promise<number> {
     let sql = `SELECT COUNT(*) as n FROM "${table}"`;
-    const args: unknown[] = [];
     const w = this.buildWhere(where);
     if (w.sql) sql += ` WHERE ${w.sql}`;
-    const r = await this.client.execute({ sql, args });
+    const r = await this.client.execute({ sql, args: w.args });
     return Number(r.rows[0]?.n ?? 0);
   }
 
