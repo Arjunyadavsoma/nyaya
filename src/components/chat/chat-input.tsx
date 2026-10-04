@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Square, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Send, Square, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -15,11 +15,8 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistantText }: ChatInputProps) {
   const [text, setText] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
-  const recRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -41,42 +38,6 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
       e.preventDefault();
       submit();
     }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
-      chunksRef.current = [];
-      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mr.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        stream.getTracks().forEach(t => t.stop());
-        try {
-          const form = new FormData();
-          form.append("audio", blob, "voice.webm");
-          const res = await fetch("/api/ai/asr", { method: "POST", body: form });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.text) setText(t => (t ? t + " " : "") + data.text);
-          } else {
-            toast.error("Voice transcription failed");
-          }
-        } catch {
-          toast.error("Voice transcription failed");
-        }
-      };
-      mr.start();
-      recRef.current = mr;
-      setIsRecording(true);
-    } catch {
-      toast.error("Microphone access denied");
-    }
-  };
-
-  const stopRecording = () => {
-    recRef.current?.stop();
-    setIsRecording(false);
   };
 
   const speak = async () => {
@@ -113,22 +74,10 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
       <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
         <div className={cn(
           "flex items-end gap-1.5 rounded-2xl border bg-background transition-all",
-          text.trim() ? "border-primary/40 shadow-sm" : "border-border",
-          isRecording && "border-emergency/50"
+          text.trim() ? "border-primary/40 shadow-sm" : "border-border"
         )}>
-          {/* Left: voice + TTS */}
-          <div className="flex flex-row sm:flex-col gap-0.5 pb-1.5 pl-1.5">
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={cn(
-                "h-8 w-8 rounded-lg inline-flex items-center justify-center transition-colors shrink-0",
-                isRecording ? "bg-emergency/15 text-emergency" : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-              aria-label={isRecording ? "Stop recording" : "Voice input"}
-              title={isRecording ? "Stop recording" : "Voice input"}
-            >
-              {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </button>
+          {/* TTS button */}
+          <div className="pb-1.5 pl-1.5">
             <button
               onClick={speak}
               className={cn(
