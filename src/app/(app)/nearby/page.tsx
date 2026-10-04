@@ -48,15 +48,25 @@ export default async function NearbyPage({ searchParams }: PageProps) {
       })
     : [];
 
-  // Get distinct states — use raw query since LibSqlDb doesn't support select/distinct
-  const allStates = await db.policeStation.findMany({
-    orderBy: { name: "asc" },
-  });
-  const stateSet = new Set<string>();
-  for (const s of allStates as Array<{ state?: string | null }>) {
-    if (s.state) stateSet.add(s.state);
+  // Get distinct states — fast raw SQL (doesn't load all 16k rows)
+  let stateList: string[] = [];
+  try {
+    // Access the raw libSQL client if available (production/Turso)
+    const rawClient = (db as unknown as { client?: { execute: (q: { sql: string }) => Promise<{ rows: Array<{ state?: string }> }> } }).client;
+    if (rawClient) {
+      const stateRows = await rawClient.execute({ sql: 'SELECT DISTINCT state FROM PoliceStation WHERE state IS NOT NULL ORDER BY state ASC' });
+      stateList = stateRows.rows.map(r => r.state).filter(Boolean) as string[];
+    }
+  } catch {}
+  // Fallback: if raw client not available (local Prisma dev), use findMany + dedup
+  if (stateList.length === 0) {
+    const allStations = await db.policeStation.findMany({ orderBy: { name: "asc" } });
+    const stateSet = new Set<string>();
+    for (const s of allStations as Array<{ state?: string | null }>) {
+      if (s.state) stateSet.add(s.state);
+    }
+    stateList = [...stateSet].sort();
   }
-  const stateList = [...stateSet].sort();
 
   const stations: Station[] = rows.map((s) => ({
     id: s.id,
