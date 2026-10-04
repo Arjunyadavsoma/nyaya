@@ -7,16 +7,15 @@ import { ChatMessageList } from "./chat-message";
 import { ChatInput } from "./chat-input";
 import { ChatHistory } from "./chat-history";
 import { ModeSwitcher, type ChatMode } from "./mode-switcher";
-import { DisclaimerBanner } from "@/components/common/disclaimer";
-import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldAlert, BookOpen } from "lucide-react";
+import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldCheck, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const SUGGESTED = [
-  { q: "What are my fundamental rights under the Constitution?", icon: Scale, category: "Constitutional" },
-  { q: "What should I do if I'm arrested by the police?", icon: ShieldAlert, category: "Criminal" },
-  { q: "How do I file an FIR online?", icon: FileSearch, category: "Procedure" },
-  { q: "What are my rights as a tenant?", icon: BookOpen, category: "Property" },
+  { q: "What are my fundamental rights under the Constitution?", icon: Scale, category: "Constitutional", color: "bg-primary/10 text-primary" },
+  { q: "What should I do if I'm arrested by the police?", icon: ShieldCheck, category: "Criminal", color: "bg-emergency/10 text-emergency" },
+  { q: "How do I file an FIR online?", icon: FileSearch, category: "Procedure", color: "bg-accent/10 text-accent-foreground" },
+  { q: "What are my rights as a tenant?", icon: BookOpen, category: "Property", color: "bg-success/10 text-success" },
 ];
 
 export function ChatWindow() {
@@ -51,11 +50,10 @@ export function ChatWindow() {
       if (res.ok) {
         setBookmarks((prev) => {
           const next = new Set(prev);
-          if (isAdd) next.add(msgId);
-          else next.delete(msgId);
+          if (isAdd) next.add(msgId); else next.delete(msgId);
           return next;
         });
-        toast.success(isAdd ? "Bookmarked" : "Bookmark removed");
+        toast.success(isAdd ? "Bookmarked" : "Removed");
       }
     } catch {
       toast.error("Could not update bookmark");
@@ -63,7 +61,7 @@ export function ChatWindow() {
   };
 
   return (
-    <div className="flex h-[100dvh] lg:h-[calc(100vh-0rem)]">
+    <div className="flex h-[100dvh] lg:h-screen overflow-hidden bg-gradient-to-b from-background to-muted/30">
       {/* History sidebar */}
       <ChatHistory
         currentSessionId={sessionId}
@@ -74,114 +72,119 @@ export function ChatWindow() {
       />
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-background">
-        {/* Professional header bar */}
-        <div className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
-          <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5">
-            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground shrink-0"
-                onClick={() => setHistoryOpen((o) => !o)}
-                aria-label="Toggle history"
-              >
-                <PanelLeft className="h-4 w-4" />
-              </Button>
-              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-sm">
-                <Scale className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
-                  Nyaya AI
-                  <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-success animate-pulse" title="Online" />
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="flex items-center justify-between gap-2 px-3 sm:px-4 h-14 border-b border-border bg-card/60 backdrop-blur-xl z-30 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              onClick={() => setHistoryOpen(o => !o)}
+              className="h-9 w-9 rounded-lg hover:bg-accent/50 inline-flex items-center justify-center text-muted-foreground transition-colors shrink-0"
+              aria-label="Toggle history"
+            >
+              <PanelLeft className="h-[18px] w-[18px]" />
+            </button>
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md">
+                  <Scale className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <div className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
-                  {isStreaming ? "●●● Typing…" : "Legal Assistant · 26,687 SC judgments"}
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-card" />
+              </div>
+              <div className="hidden sm:block">
+                <div className="font-semibold text-sm leading-tight">Nyaya AI</div>
+                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  {isStreaming ? (
+                    <><span className="inline-flex gap-0.5"><span className="w-1 h-1 rounded-full bg-primary animate-pulse" /><span className="w-1 h-1 rounded-full bg-primary animate-pulse" style={{animationDelay:'0.2s'}} /><span className="w-1 h-1 rounded-full bg-primary animate-pulse" style={{animationDelay:'0.4s'}} /></span> typing…</>
+                  ) : (
+                    <><span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Online</>
+                  )}
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-              <ModeSwitcher value={mode} onChange={setMode} />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-emergency"
-                onClick={clear}
-                disabled={messages.length === 0 || isStreaming}
-                aria-label="Clear conversation"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <ModeSwitcher value={mode} onChange={setMode} />
+            <button
+              onClick={clear}
+              disabled={messages.length === 0 || isStreaming}
+              className="h-9 w-9 rounded-lg hover:bg-accent/50 inline-flex items-center justify-center text-muted-foreground hover:text-emergency disabled:opacity-30 transition-colors shrink-0"
+              aria-label="Clear conversation"
+            >
+              <Trash2 className="h-[18px] w-[18px]" />
+            </button>
+          </div>
+        </header>
 
-          {/* Retrieval sources strip */}
-          {retrieval.length > 0 && (
-            <div className="px-2 sm:px-3 pb-2 border-t border-border/50 bg-muted/30">
-              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground py-1.5">
-                <FileSearch className="h-3 w-3 shrink-0" />
-                <span className="font-medium">{retrieval.length} source{retrieval.length !== 1 ? "s" : ""}</span>
-                {usage && !isStreaming && (
-                  <span className="ml-auto flex items-center gap-2 text-[9px] sm:text-[10px]">
-                    <span className="inline-flex items-center gap-0.5" title="Approximate token usage">
-                      <Zap className="h-2.5 w-2.5 text-accent" />
-                      ~{usage.approxTokens} tokens
-                    </span>
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-1 sm:gap-1.5 overflow-x-auto nyaya-scroll pb-1">
-                {retrieval.map((r, i) => (
-                  <span key={i} className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-[10px]">
-                    {r.actName?.slice(0, 25) ?? "source"}
-                    {r.sectionNo && <span className="text-muted-foreground">§{r.sectionNo}</span>}
-                  </span>
-                ))}
-              </div>
+        {/* Retrieval strip */}
+        {retrieval.length > 0 && (
+          <div className="px-3 sm:px-4 py-1.5 bg-muted/40 border-b border-border/50 flex items-center gap-2 overflow-x-auto nyaya-scroll shrink-0">
+            <FileSearch className="h-3 w-3 text-muted-foreground shrink-0" />
+            <span className="text-[10px] font-medium text-muted-foreground shrink-0">{retrieval.length} sources</span>
+            <div className="flex gap-1">
+              {retrieval.slice(0, 5).map((r, i) => (
+                <span key={i} className="shrink-0 text-[9px] bg-card border border-border rounded px-1.5 py-0.5 text-muted-foreground">
+                  {r.actName?.slice(0, 18) ?? "src"}
+                  {r.sectionNo && ` §${r.sectionNo}`}
+                </span>
+              ))}
             </div>
-          )}
-        </div>
+            {usage && !isStreaming && (
+              <span className="ml-auto shrink-0 text-[9px] text-muted-foreground flex items-center gap-0.5">
+                <Zap className="h-2.5 w-2.5 text-accent" />~{usage.approxTokens}
+              </span>
+            )}
+          </div>
+        )}
 
-        {/* Messages — or welcome state */}
+        {/* Messages / Welcome */}
         {messages.length === 0 ? (
-          <div className="flex-1 overflow-y-auto nyaya-scroll px-3 sm:px-4 py-4 sm:py-6">
-            <div className="max-w-lg mx-auto">
-              <div className="text-center space-y-4 sm:space-y-5 mb-5">
-                <div className="inline-flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg mx-auto">
-                  <Scale className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+          <div className="flex-1 overflow-y-auto nyaya-scroll px-4 py-8">
+            <div className="max-w-md mx-auto">
+              {/* Hero */}
+              <div className="text-center space-y-4 mb-8">
+                <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-to-br from-primary to-primary/60 shadow-xl mx-auto relative">
+                  <Scale className="h-10 w-10 text-primary-foreground" />
+                  <span className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground border-2 border-background">AI</span>
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-foreground">Ask Nyaya</h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Your AI legal assistant for Indian law. Cited answers from{" "}
-                    <span className="text-primary font-medium">26,687 SC judgments</span>.
+                  <h2 className="text-2xl font-bold tracking-tight">Ask Nyaya</h2>
+                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+                    Cited legal answers from{" "}
+                    <span className="text-primary font-semibold">26,687 SC judgments</span>,{" "}
+                    <span className="text-primary font-semibold">6,354 BNS/BNSS/BSA Q&A</span>, and verified Indian legal sources.
                   </p>
                 </div>
               </div>
-              <div className="grid gap-2 text-left">
+
+              {/* Suggestion cards */}
+              <div className="space-y-2">
                 {SUGGESTED.map((s) => {
                   const Icon = s.icon;
                   return (
                     <button
                       key={s.q}
                       onClick={() => handleSend(s.q)}
-                      className="group flex items-center gap-2.5 sm:gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 hover:border-primary/40 hover:shadow-sm active:scale-[0.98] transition-all text-left"
+                      className="group w-full flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/30 hover:shadow-md active:scale-[0.98] transition-all text-left"
                     >
-                      <div className="shrink-0 inline-flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
+                      <div className={`shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-xl ${s.color}`}>
+                        <Icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{s.category}</div>
-                        <div className="text-xs sm:text-sm font-medium text-foreground truncate">{s.q}</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">{s.category}</div>
+                        <div className="text-sm font-medium text-foreground">{s.q}</div>
                       </div>
-                      <Sparkles className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
+                      <Sparkles className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-3 sm:mt-4">
-                <DisclaimerBanner compact />
+
+              {/* Disclaimer */}
+              <div className="mt-6 flex items-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2.5">
+                <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  Nyaya provides legal <strong>information</strong>, not legal advice. Not a substitute for a licensed advocate.
+                </p>
               </div>
             </div>
           </div>
@@ -195,7 +198,7 @@ export function ChatWindow() {
 
         {/* Error */}
         {error && (
-          <div className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-emergency/30 bg-emergency/5 p-3 text-xs text-emergency">
+          <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl border border-emergency/30 bg-emergency/5 p-3 text-xs text-emergency">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold">Something went wrong</div>
@@ -209,7 +212,7 @@ export function ChatWindow() {
           onSend={handleSend}
           onStop={stop}
           isStreaming={isStreaming}
-          lastAssistantText={messages.filter((m) => m.role === "assistant").pop()?.content}
+          lastAssistantText={messages.filter(m => m.role === "assistant").pop()?.content}
         />
       </div>
     </div>

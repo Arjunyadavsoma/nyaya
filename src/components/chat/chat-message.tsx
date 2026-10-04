@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Bot, User, Scale, ShieldCheck } from "lucide-react";
+import { User, Scale, ShieldCheck } from "lucide-react";
 import type { ChatMessage } from "@/hooks/use-chat";
 import { CitationCard, BookmarkButton } from "./citation-card";
 import { MessageActions } from "./message-actions";
@@ -25,11 +25,11 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
         <span key={i}>
           {parts.map((p, j) => {
             if (p.startsWith("**") && p.endsWith("**"))
-              return <strong key={j} className="font-semibold">{p.slice(2, -2)}</strong>;
+              return <strong key={j} className="font-semibold text-foreground">{p.slice(2, -2)}</strong>;
             if (p.startsWith("*") && p.endsWith("*"))
-              return <em key={j} className="italic">{p.slice(1, -1)}</em>;
+              return <em key={j}>{p.slice(1, -1)}</em>;
             if (p.startsWith("`") && p.endsWith("`"))
-              return <code key={j} className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono">{p.slice(1, -1)}</code>;
+              return <code key={j} className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono text-primary">{p.slice(1, -1)}</code>;
             return <span key={j}>{p}</span>;
           })}
           {i < content.split("\n").length - 1 && <br />}
@@ -40,15 +40,15 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
 
   if (isUser) {
     return (
-      <div ref={ref} className="flex gap-2.5 justify-end group animate-in fade-in slide-in-from-bottom-1 duration-300">
-        <div className="flex flex-col items-end max-w-[85%] sm:max-w-[75%]">
-          <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2.5 shadow-sm">
+      <div ref={ref} className="flex gap-2.5 justify-end animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="max-w-[80%] sm:max-w-[70%]">
+          <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-md px-4 py-2.5 shadow-sm">
             <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {renderContent(msg.content)}
             </div>
           </div>
         </div>
-        <div className="shrink-0 h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+        <div className="shrink-0 h-8 w-8 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center">
           <User className="h-4 w-4 text-primary" />
         </div>
       </div>
@@ -56,19 +56,22 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
   }
 
   return (
-    <div ref={ref} className="flex gap-2.5 group animate-in fade-in slide-in-from-bottom-1 duration-300">
-      <div className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-sm">
+    <div ref={ref} className="flex gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shadow-sm">
         <Scale className="h-4 w-4 text-accent-foreground" />
       </div>
-      <div className="flex flex-col items-start max-w-[85%] sm:max-w-[75%] min-w-0">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-foreground">Nyaya AI</span>
-          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-muted/50 rounded-full px-1.5 py-0.5">
+      <div className="flex flex-col max-w-[80%] sm:max-w-[70%] min-w-0">
+        {/* Name + badge */}
+        <div className="flex items-center gap-1.5 mb-1 ml-1">
+          <span className="text-xs font-bold text-foreground">Nyaya</span>
+          <span className="inline-flex items-center gap-0.5 text-[9px] text-success bg-success/10 rounded-full px-1.5 py-0.5">
             <ShieldCheck className="h-2.5 w-2.5" />
             Verified
           </span>
         </div>
-        <div className="rounded-2xl rounded-tl-sm bg-card border border-border px-4 py-2.5 shadow-sm w-full">
+
+        {/* Message bubble */}
+        <div className="rounded-2xl rounded-tl-md bg-card border border-border/60 px-4 py-2.5 shadow-sm">
           {msg.playbook ? (
             <EmergencyResponse playbook={msg.playbook as Parameters<typeof EmergencyResponse>[0]["playbook"]} />
           ) : (
@@ -84,6 +87,8 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
             </div>
           )}
         </div>
+
+        {/* Actions */}
         {!msg.pending && msg.content && !msg.playbook && (
           <MessageActions
             messageId={msg.id}
@@ -91,19 +96,19 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
             citations={msg.citations}
             bookmarkButton={
               msg.id ? (
-                <BookmarkButton
-                  onClick={() => onBookmark(msg.id!, msg.content)}
-                  active={isBookmarked}
-                />
+                <BookmarkButton onClick={() => onBookmark(msg.id!, msg.content)} active={isBookmarked} />
               ) : null
             }
           />
         )}
+
+        {/* Citations */}
         {msg.citations && msg.citations.length > 0 && !msg.playbook && (
           <CitationCard citations={msg.citations} />
         )}
+
         {!msg.pending && msg.content && !msg.playbook && (
-          <DisclaimerStrip className="mt-1" />
+          <DisclaimerStrip className="mt-1 ml-1" />
         )}
       </div>
     </div>
@@ -124,7 +129,7 @@ export function ChatMessageList({
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   return (
-    <div className="flex-1 overflow-y-auto nyaya-scroll px-3 sm:px-4 py-4 space-y-4">
+    <div className="flex-1 overflow-y-auto nyaya-scroll px-3 sm:px-4 py-4 space-y-4 bg-gradient-to-b from-transparent to-muted/10">
       {messages.map((m, i) => (
         <ChatMessageItem
           key={m.id ?? i}
