@@ -32,7 +32,7 @@ export async function createGroqStream(opts: CreateStreamOpts): Promise<{
       messages: opts.messages,
       stream: true,
       temperature: opts.temperature ?? 0.3,
-      max_tokens: opts.maxTokens ?? 1500,
+      max_tokens: opts.maxTokens ?? 2000,
     }),
   });
 

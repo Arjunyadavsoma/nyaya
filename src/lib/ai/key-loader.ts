@@ -46,11 +46,11 @@ export function loadKeys(): LoadedKey[] {
   }
 
   // Fallback: z-ai-web-dev-sdk synthetic slot (sandbox only)
-  // Always add the z-ai fallback when NYAYA_USE_ZAI_FALLBACK is not "false",
-  // even if real Groq keys exist — this ensures the app still works if a
-  // Groq key is invalid/expired (the KeyPool will mark it unhealthy and
-  // fall through to the z-ai slot).
-  if (process.env.NYAYA_USE_ZAI_FALLBACK !== "false") {
+  // Only load z-ai in development (sandbox). On Vercel (production), the
+  // z-ai SDK needs a config file that doesn't exist, so it always fails.
+  // In production, we rely on Groq + RAG fallback only.
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction && process.env.NYAYA_USE_ZAI_FALLBACK !== "false") {
     logger.info("Registering z-ai-web-dev-sdk as a KeyPool fallback slot (in addition to any Groq keys).");
     keys.push(makeRecord("zai-sdk-slot", "zai"));
   }
