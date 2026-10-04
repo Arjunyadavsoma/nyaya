@@ -152,7 +152,19 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
   // providers are down (Groq 403, z-ai not available on Vercel, etc.)
   const fallbackText = generateRagFallback(message, context);
   onToken(fallbackText);
-  throw new AllKeysExhaustedError(fallbackText);
+
+  // DON'T throw — return the fallback text so the chat API can persist it
+  // as a normal assistant message (with citations + disclaimer).
+  // The throw was causing the catch block to fire an error event, making
+  // the UI show "Something went wrong" even though the answer was fine.
+  const { validateCitations } = await import("./citations");
+  const { citations, correctedAnswer } = validateCitations(fallbackText, context);
+  return {
+    fullText: fallbackText,
+    citations,
+    keyId: "rag-fallback",
+    disclaimer: "Nyaya provides legal information, not legal advice.",
+  };
 }
 
 /**
