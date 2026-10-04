@@ -6,6 +6,7 @@ import { DesktopSidebar } from "./desktop-sidebar";
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { DisclaimerBanner } from "@/components/common/disclaimer";
+import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,13 +14,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isChat = pathname === "/chat";
 
   return (
-    <div className="min-h-[100dvh] flex flex-col">
+    <div className={cn("flex flex-col", isChat ? "h-[100dvh] overflow-hidden" : "min-h-[100dvh]")}>
       {/* Desktop: sidebar + main */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         <DesktopSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {!isChat && <Header />}
-          <main className="flex-1 pb-14 lg:pb-0">
+          <main className={cn("flex-1 min-h-0", !isChat && "pb-14 lg:pb-0")}>
             {children}
           </main>
           {!isChat && <Footer />}

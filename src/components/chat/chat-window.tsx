@@ -61,7 +61,7 @@ export function ChatWindow() {
   };
 
   return (
-    <div className="flex h-[100dvh] lg:h-screen overflow-hidden bg-gradient-to-b from-background to-muted/30">
+    <div className="flex h-full overflow-hidden bg-gradient-to-b from-background to-muted/30">
       {/* History sidebar */}
       <ChatHistory
         currentSessionId={sessionId}
