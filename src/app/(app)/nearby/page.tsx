@@ -8,16 +8,11 @@ import { MapPin, ShieldAlert, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PageProps {
   searchParams: Promise<{ city?: string; state?: string; q?: string }>;
 }
-
-// Load up to 500 stations per filter — enough for any state, and the
-// list is scrollable on the client. Loading all 16,459 at once would
-// be too slow, so when no filter is applied we show a prompt to select
-// a state or use location.
-const MAX_STATIONS = 500;
 
 export default async function NearbyPage({ searchParams }: PageProps) {
   const { city, state, q } = await searchParams;
@@ -25,7 +20,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   const stateTrim = state?.trim();
   const queryTrim = q?.trim();
 
-  // Build where clause: filter by state, city, and/or name/address search
+  // Build where clause
   const where: Record<string, unknown> = {};
   if (stateTrim) where.state = { contains: stateTrim };
   if (cityTrim) where.city = { contains: cityTrim };
@@ -40,21 +35,20 @@ export default async function NearbyPage({ searchParams }: PageProps) {
 
   const hasFilter = !!(stateTrim || cityTrim || queryTrim);
 
-  // Get total count for display
+  // Get total count
   const total = await db.policeStation.count({
     where: Object.keys(where).length > 0 ? where : undefined,
   });
 
-  // Fetch up to MAX_STATIONS stations for the current filter
+  // Fetch ALL matching stations — no limit (Turso handles it fast)
   const rows = hasFilter
     ? await db.policeStation.findMany({
         where: Object.keys(where).length > 0 ? where : undefined,
         orderBy: { name: "asc" },
-        take: MAX_STATIONS,
       })
     : [];
 
-  // Get distinct states for the chip bar
+  // Get distinct states
   const allStates = await db.policeStation.findMany({
     select: { state: true },
     distinct: ["state"],
@@ -78,7 +72,6 @@ export default async function NearbyPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      {/* Page header */}
       <header className="space-y-2">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
@@ -87,21 +80,16 @@ export default async function NearbyPage({ searchParams }: PageProps) {
           Nearby Police Stations
         </h1>
         <p className="text-sm text-muted-foreground">
-          Find the closest police station, call them directly, or get
-          turn-by-turn directions via OpenStreetMap. Data sourced from the
-          Government of India (Ministry of Home Affairs) —{" "}
-          {total.toLocaleString("en-IN")} stations across {stateList.length}{" "}
-          states &amp; UTs.
+          {total.toLocaleString("en-IN")} police stations across {stateList.length} states &amp; UTs.
+          Data from the Government of India (BPR&D, Ministry of Home Affairs).
         </p>
       </header>
 
-      {/* Emergency reminder */}
       <div className="flex items-start gap-2 rounded-lg border border-emergency/30 bg-emergency/5 p-3 text-sm">
         <ShieldAlert className="h-4 w-4 text-emergency shrink-0 mt-0.5" aria-hidden />
         <p className="text-foreground/80 leading-relaxed">
           <strong className="text-emergency">In a life-threatening emergency, call 112.</strong>{" "}
-          The stations below are for non-urgent visits and follow-up. Always
-          confirm the phone number before visiting.
+          The stations below are for non-urgent visits and follow-up.
         </p>
       </div>
 
@@ -115,7 +103,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
             type="text"
             name="q"
             defaultValue={queryTrim}
-            placeholder="Search by police station name, district, or city…"
+            placeholder="Search by station name, district, or city…"
             className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground"
             aria-label="Search police stations"
           />
@@ -139,10 +127,9 @@ export default async function NearbyPage({ searchParams }: PageProps) {
       {/* State filter chips */}
       <div className="space-y-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Filter by state{" "}
           {hasFilter
-            ? `(${total.toLocaleString("en-IN")} stations${queryTrim ? ` matching "${queryTrim}"` : stateTrim ? ` in ${stateTrim}` : ""})`
-            : `(${total.toLocaleString("en-IN")} total — select a state or search)`}
+            ? `${total.toLocaleString("en-IN")} stations${queryTrim ? ` matching "${queryTrim}"` : stateTrim ? ` in ${stateTrim}` : ""} — showing all`
+            : `${total.toLocaleString("en-IN")} total — select a state or search`}
         </div>
         <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto nyaya-scroll pb-1">
           <Link
@@ -181,7 +168,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
             India has {total.toLocaleString("en-IN")} police stations across {stateList.length} states &amp; UTs.
             Pick a state from the chips above, use the search box, or click{" "}
-            <strong>&ldquo;Use my location&rdquo;</strong> on the map tab to find the nearest stations.
+            <strong>&ldquo;My location&rdquo;</strong> on the map tab.
           </p>
         </div>
       )}
