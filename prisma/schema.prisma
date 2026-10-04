@@ -1,0 +1,360 @@
+// Nyaya (NyayaAI) — Prisma schema
+// SQLite-adapted from the Supabase+pgvector spec.
+// Embeddings stored as JSON float[]; FTS via application-layer BM25.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users & Auth ──────────────────────────────────────────────
+model User {
+  id           String         @id @default(cuid())
+  email        String?        @unique
+  phone        String?        @unique
+  name         String?
+  role         String         @default("viewer") // viewer|editor|legal_reviewer|superadmin
+  authProvider  String         @default("guest") // guest|credentials|google|phone
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  bookmarks    Bookmark[]
+  chatSessions ChatSession[]
+  feedback     Feedback[]
+  reports      ContentReport[]
+  profile      Profile?
+}
+
+model Profile {
+  userId                   String   @id
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredLanguage        String   @default("en")
+  emergencyContactsJson    String   @default("[]")
+  hasConsentedLocation     Boolean  @default(false)
+  hasConsentedChatStorage  Boolean  @default(false)
+  lastActiveAt             DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+// ── Legal knowledge graph ────────────────────────────────────
+model LegalSource {
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  type          String // act|code|constitution|judgment|regulation
+  jurisdiction  String          @default("india")
+  sourceUrl     String
+  effectiveDate DateTime?
+  createdAt     DateTime         @default(now())
+  documents     LegalDocument[]
+}
+
+model LegalDocument {
+  id         String        @id @default(cuid())
+  sourceId   String
+  source     LegalSource   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  slug       String        @unique
+  title      String
+  body       String
+  language   String        @default("en")
+  status     String        @default("draft") // draft|review|verified|published
+  verifiedBy String?
+  verifiedAt DateTime?
+  version    Int           @default(1)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  chunks     LegalChunk[]
+}
+
+model LegalChunk {
+  id           String        @id @default(cuid())
+  documentId   String
+  document     LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sectionNo    String?
+  actName      String?
+  effectiveDate DateTime?
+  content      String
+  embedding    String // JSON float[] (1024-d shape compat)
+  metadataJson String        @default("{}")
+  createdAt    DateTime       @default(now())
+
+  @@index([documentId])
+  @@index([sectionNo])
+}
+
+// ── Rights library ────────────────────────────────────────────
+model RightsTopic {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  icon        String?
+  description String?
+  order       Int             @default(0)
+  articles    RightsArticle[]
+}
+
+model RightsArticle {
+  id                  String      @id @default(cuid())
+  topicId             String
+  topic               RightsTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  slug                String      @unique
+  title               String
+  summary             String
+  body                String
+  actualLaw           String
+  example             String?
+  whatToDoIfViolated  String?
+  language            String      @default("en")
+  jurisdiction        String      @default("india")
+  sourceUrl           String
+  verifiedBy          String?
+  verifiedAt          DateTime?
+  version             Int         @default(1)
+  status              String      @default("draft")
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([topicId])
+  @@index([status])
+}
+
+// ── Emergency ────────────────────────────────────────────────
+model EmergencyScenario {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  icon          String?
+  whatToDo      String
+  whatToSay     String?
+  whatNotToDo   String?
+  whatToKeep    String?
+  applicableLaw String?
+  authority     String?
+  offlineCached Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Helpline {
+  id           String   @id @default(cuid())
+  number       String   @unique
+  label        String
+  category     String
+  description  String?
+  available24x7 Boolean @default(true)
+  language     String   @default("en")
+  order        Int      @default(0)
+}
+
+// ── Police stations ───────────────────────────────────────────
+model PoliceStation {
+  id           String   @id @default(cuid())
+  name         String
+  address      String
+  city         String?
+  state        String?
+  pincode      String?
+  phone        String?
+  lat          Float
+  lng          Float
+  openHours    String?
+  jurisdiction String?
+  source       String   @default("osm")
+  status       String   @default("published")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([state])
+  @@index([city])
+}
+
+// ── Judges (official info only) ───────────────────────────────
+model Judge {
+  id                   String   @id @default(cuid())
+  name                 String
+  courtLevel           String // supreme-court|high-court|district
+  state                String?
+  courtName            String?
+  appointmentYear      Int?
+  education            String?
+  careerTimeline       String?
+  photoUrl             String?
+  officialSourceUrl    String
+  notableJudgmentsJson String   @default("[]")
+  status               String   @default("published")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([courtLevel])
+  @@index([state])
+}
+
+// ── Supreme Court Judgments (1950–2024) ─────────────────────
+model SCJudgment {
+  id          String   @id @default(cuid())
+  caseName    String
+  year        Int?
+  dateStr     String?
+  source      String   @default("Supreme Court of India")
+  sourceUrl   String   @default("https://main.sci.gov.in/judgments")
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+
+  @@index([year])
+  @@index([caseName])
+}
+
+// ── Legal info hub ───────────────────────────────────────────
+model LegalInfoArticle {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  body        String
+  category    String // procedure|template|locator|glossary
+  state       String?
+  language    String   @default("en")
+  sourceUrl   String?
+  status      String   @default("draft")
+  verifiedBy  String?
+  verifiedAt  DateTime?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+model DocumentTemplate {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  body        String
+  format      String   @default("md")
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── Chat ──────────────────────────────────────────────────────
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mode      String        @default("know-the-law")
+  title     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          String // user|assistant|system
+  content       String
+  citationsJson String      @default("[]")
+  mode          String?
+  helpful       Boolean?
+  createdAt     DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+model Citation {
+  id         String   @id @default(cuid())
+  messageId  String?
+  actName    String
+  sectionNo  String?
+  sourceUrl  String
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+}
+
+// ── User engagement ──────────────────────────────────────────
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // rights-article|playbook|info|template
+  refId     String
+  label     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, type, refId])
+  @@index([userId])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messageId String?
+  rating    Int?
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model ContentReport {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      String
+  refId     String
+  reason    String
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+model ContentReview {
+  id          String   @id @default(cuid())
+  contentType String
+  refId       String
+  reviewerId  String?
+  action      String
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+// ── Admin & ops ───────────────────────────────────────────────
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  action       String
+  entityType   String
+  entityId     String?
+  metadataJson String   @default("{}")
+  createdAt    DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ── AI KeyPool usage persistence ─────────────────────────────
+model GroqKeyUsage {
+  id          String   @id @default(cuid())
+  keyId       String
+  model       String
+  date        String // YYYY-MM-DD UTC
+  requests    Int      @default(0)
+  tokens      Int      @default(0)
+  lastError   String?
+  lastErrorAt DateTime?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([keyId, model, date])
+  @@index([keyId, date])
+}

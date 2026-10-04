@@ -1,0 +1,75 @@
+{
+  "name": "Nyaya — Know Your Legal Rights",
+  "short_name": "Nyaya",
+  "description": "Nyaya helps ordinary Indians understand their legal rights in plain language, handle legal emergencies, find nearby police stations, and access free legal aid. Legal information, not legal advice.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#12224A",
+  "background_color": "#ffffff",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["legal", "education", "government", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Emergency",
+      "short_name": "Emergency",
+      "description": "SOS + emergency playbooks",
+      "url": "/emergency",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Ask AI",
+      "short_name": "Ask AI",
+      "description": "Chat with Nyaya AI for cited legal answers",
+      "url": "/chat",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Rights",
+      "short_name": "Rights",
+      "description": "Browse the rights library across 13 categories",
+      "url": "/rights",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Nearby Police",
+      "short_name": "Nearby",
+      "description": "Find nearby police stations on a map",
+      "url": "/nearby",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "id": "/",
+  "display_override": ["standalone", "minimal-ui", "browser"]
+}

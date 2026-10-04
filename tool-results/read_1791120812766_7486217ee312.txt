@@ -1,0 +1,262 @@
+     1→     1→# Nyaya — Shared Worklog
+     2→     2→
+     3→     3→This file is the single source of truth for cross-agent handover.
+     4→     4→Each agent MUST read this before starting and append (never overwrite) after finishing.
+     5→     5→
+     6→     6→---
+     7→     7→Task ID: M0
+     8→     8→Agent: main
+     9→     9→Task: Plan approval + seed worklog.md + CLAUDE.md
+    10→    10→
+    11→    11→Work Log:
+    12→    12→- Reviewed existing scaffold: Next 16, Prisma+SQLite, shadcn/ui (full set), z-ai-web-dev-sdk, framer-motion, lucide, next-intl, next-auth, zustand, tanstack-query all present.
+    13→    13→- Produced full plan: folder structure, Prisma schema, 16-milestone checklist, KeyPool design.
+    14→    14→- User approved as-is.
+    15→    15→- Seeded CLAUDE.md with architecture decision log + all sandbox adaptations.
+    16→    16→
+    17→    17→Stage Summary:
+    18→    18→- Plan locked. Executing M1 next.
+    19→    19→- Key adaptations: SQLite not Postgres, Leaflet/OSM not Google Maps, z-ai-web-dev-sdk as default KeyPool slot, agent-browser for QA instead of Vitest/Playwright test files.
+    20→    20→- Only `/` is user-visible route; internal route groups reached via in-app shell.
+    21→    21→
+    22→    22→---
+    23→    23→Task ID: M1
+    24→    24→Agent: main
+    25→    25→Task: Foundation — design tokens, app shell, sticky footer, providers
+    26→    26→
+    27→    27→Work Log:
+    28→    28→- Rewrote globals.css with Nyaya palette: primary #12224A, accent #E8A33D (saffron), success #1F7A5A, emergency #C62828, full dark mode, Plus Jakarta Sans font var, safe-area env padding, reduced-motion + custom scrollbar + emergency pulse keyframes.
+    29→    29→- Rewrote layout.tsx: Plus Jakarta Sans + Noto Sans Devanagari fonts, ThemeProvider (next-themes), QueryProvider (tanstack), OfflineBanner, AppShell, InstallPrompt, Toaster + Sonner. Added manifest + viewport metadata.
+    30→    30→- Created providers/theme-provider + query-provider.
+    31→    31→- Created layout/nav-config.ts (8 nav items, 5 primary for bottom bar, emergency tone on SOS).
+    32→    32→- Created layout/bottom-tab-bar.tsx (mobile, fixed, 5-col grid, framer-motion layout indicator, emergency pulse on SOS).
+    33→    33→- Created layout/desktop-sidebar.tsx (lg+, w-64, sticky, theme toggle).
+    34→    34→- Created layout/header.tsx (mobile sticky, logo, theme toggle, Sheet menu).
+    35→    35→- Created layout/footer.tsx (sticky via mt-auto, 4-col, legal links, emergency helplines, disclaimer box).
+    36→    36→- Created layout/app-shell.tsx (min-h-screen flex flex-col, sidebar+main on desktop, bottom bar on mobile).
+    37→    37→- Created common/disclaimer.tsx (DisclaimerBanner + DisclaimerStrip).
+    38→    38→- Created pwa/offline-banner.tsx + pwa/install-prompt.tsx (after 2nd visit, dismissible).
+    39→    39→- Created lib/utils/constants.ts (helplines, legal aid bodies, rights categories, model ids, event names).
+    40→    40→- Rewrote app/page.tsx: hero with saffron accent, quick actions grid, rights library preview, info hub links, helplines card, disclaimer.
+    41→    41→- Installed leaflet, react-leaflet, @types/leaflet, serwist.
+    42→    42→
+    43→    43→Stage Summary:
+    44→    44→- / renders 200 on mobile (390x844) with bottom tab bar (Home/Chat/SOS/Rights/Nearby) + header + menu sheet.
+    45→    45→- No console errors. Lint clean.
+    46→    46→- Dev server up on port 3000.
+    47→    47→
+    48→    48→---
+    49→    49→Task ID: M2-a
+    50→    50→Agent: general-purpose (seed content writer)
+    51→    51→Task: Write rights-library articles seed JSON for 13 categories
+    52→    52→
+    53→    53→Work Log:
+    54→    54→- Read worklog.md and CLAUDE.md to understand project context (Nyaya legal-info PWA, plain-language rights, every citation must be real).
+    55→    55→- Created `/home/z/my-project/content/rights/articles.json` containing 33 article objects covering all 13 required topic slugs.
+    56→    56→- Coverage per topic (all ≥2):
+    57→    57→  - fundamental-rights: 4 (right-to-equality, right-to-freedom-of-speech, right-to-life-and-liberty, right-against-exploitation)
+    58→    58→  - arrest-and-detention: 3 (rights-of-arrested-person, right-to-legal-aid, protection-against-illegal-detention)
+    59→    59→  - womens-rights: 4 (protection-from-domestic-violence, workplace-sexual-harassment-posh, dowry-prohibition, right-to-maintenance-women)
+    60→    60→  - childrens-rights: 3 (protection-from-sexual-offences-pocso, juvenile-justice, right-to-education-children)
+    61→    61→  - labour-rights: 3 (right-to-minimum-wages, maternity-benefit, right-to-provident-fund)
+    62→    62→  - consumer-rights: 2 (right-to-file-consumer-complaint, e-commerce-consumer-rights)
+    63→    63→  - tenant-property-rights: 2 (tenant-rights, right-to-inheritance-property)
+    64→    64→  - cyber-rights: 2 (reporting-cyber-crimes, data-protection-rights-dpdp)
+    65→    65→  - lgbtq-rights: 2 (decriminalisation-consensual-homosexuality, transgender-persons-rights)
+    66→    66→  - disability-rights: 2 (rights-of-persons-with-disabilities-rpwd, mental-healthcare-rights)
+    67→    67→  - senior-citizen-rights: 2 (maintenance-of-senior-citizens, protection-of-life-property-seniors)
+    68→    68→  - student-rights: 2 (right-to-education-students, right-against-ragging)
+    69→    69→  - rti: 2 (right-to-information, rti-first-and-second-appeal)
+    70→    70→- Each article uses the required schema: topicSlug, slug, title, summary, body (markdown, 200-400 words), actualLaw, example, whatToDoIfViolated, sourceUrl.
+    71→    71→- Used BOTH new codes (BNS/BNSS/BSA 2023 effective 1 July 2024) AND legacy IPC/CrPC references (e.g., "Section 85 BNS, 2023 (formerly Section 498A IPC)", "Section 144 BNS (formerly Section 125 CrPC)") so users who know old names can still map.
+    72→    72→- Cited only real, verifiable laws: Constitution Articles 14-24, 32, 226; BNS 2023 sections 35(3), 39, 63, 75, 79, 80, 85, 117, 118, 137-140, 144, 152, 226, 316, 318, 319; IT Act 2000 sections 66, 66C, 66D, 67, 67A, 67B; POCSO Act 2012; JJ Act 2015; RTE Act 2009; PWDVA 2005; POSH Act 2013; Dowry Prohibition Act 1961; Minimum Wages Act 1948; Code on Wages 2019; Maternity Benefit Act 2017; EPF Act 1952; Consumer Protection Act 2019 + E-Commerce Rules 2020; Transfer of Property Act 1882; State Rent Control Acts; Hindu Succession Act 1956 (amended 2005); DPDP Act 2023; Navtej Johar & NALSA judgments; Transgender Persons Act 2019; RPWD Act 2016; Mental Healthcare Act 2017; MWPSC Act 2007 (amended 2023); UGC Anti-Ragging Regulations 2009; RTI Act 2005.
+    73→    73→- Real source URLs (sci.gov.in, legislative.gov.in, nalsa.gov.in, wcd.nic.in, labour.gov.in, epfindia.gov.in, consumerhelpline.gov.in, cybercrime.gov.in, meity.gov.in, socialjustice.gov.in, disabilityaffairs.gov.in, mohfw.gov.in, education.gov.in, antiragging.in, rtionline.gov.in, cic.gov.in, shebox.nic.in, ncw.nic.in, ncpcr.gov.in, doj.gov.in).
+    74→    74→- Plain-language summaries (~2 sentences), real-life examples, and step-by-step `whatToDoIfViolated` with helpline numbers (181, 1098, 14433, 15100, 1915, 1930, 14567, 1800-180-5522, 1800-121-2830, 7827-170-170).
+    75→    75→- Did not run any code; wrote the JSON directly with the Write tool.
+    76→    76→
+    77→    77→Stage Summary:
+    78→    78→- 33 rights articles seeded in `/home/z/my-project/content/rights/articles.json`, ready for the seed runner.
+    79→    79→- All 13 topic slugs covered with ≥2 articles each.
+    80→    80→- Schema matches the spec; body word counts fall within 200-400 words; legal citations are real and verifiable; both new (BNS/BNSS 2023) and legacy (IPC/CrPC) references used.
+    81→    81→- No other files modified.
+    82→    82→
+    83→    83→---
+    84→    84→Task ID: M2-b
+    85→    85→Agent: sub-agent (general-purpose, seed content)
+    86→    86→Task: Create legal-info-hub "how to" articles JSON at /home/z/my-project/content/info/articles.json
+    87→    87→
+    88→    88→Work Log:
+    89→    89→- Read worklog.md and CLAUDE.md for context (M0/M1 complete; M2 db+seed in progress).
+    90→    90→- Created /home/z/my-project/content/info/ directory.
+    91→    91→- Wrote articles.json containing 12 procedure articles (slug, title, category, body in markdown, sourceUrl) — each 300–600 words of real, step-by-step legal procedure.
+    92→    92→- Legal accuracy verified against BNSS 2023 / BNS 2023 / BSA 2023 (effective 1 July 2024) and corresponding legacy IPC/CrPC provisions:
+    93→    93→  1. how-to-file-fir — BNSS Section 173 (zero FIR, free copy, escalation to Magistrate under BNSS Section 223 / old CrPC 156(3)); state e-FIR portals.
+    94→    94→  2. how-to-get-bail — Regular bail under BNSS Section 480 (replacing CrPC 437); anticipatory bail under BNSS Section 482 (replacing CrPC 438); default bail under BNSS Section 187 (replacing CrPC 167(2)); special powers under BNSS Section 483 (replacing CrPC 439).
+    95→    95→  3. free-legal-aid — Legal Services Authorities Act 1987 Section 12 eligibility; NALSA helpline 15100; Tele-Law 14416; Lok Adalat under Section 19; Article 39A.
+    96→    96→  4. rti — RTI Act 2005, Section 6 application, Section 7(1) 30-day / 48-hour life-liberty reply; ₹10 Central fee; BPL waiver under Section 6(5); Sections 8/9 exemptions; Section 7(9) frivolous rejection.
+    97→    97→  5. consumer-complaint — CPA 2019; District (Sec 28+34, up to ₹1 cr), State (Sec 41+47, ₹1–10 cr), National (Sec 53+58, above ₹10 cr); Section 35 filing; Section 69 two-year limitation; Sections 38/51/67 appeals; e-Daakhil portal; NCH 1915.
+    98→    98→  6. cybercrime — cybercrime.gov.in portal; 1930 helpline; BNS Sections 316/318/319 (cheating, replacing IPC 415/416/420); IT Act Sections 43, 66C, 66D.
+    99→    99→  7. file-affidavit — Notaries Act 1952 Section 8; Notaries Rules 1956 Form I register; Indian Stamp Act 1899; BNS false-evidence provisions (replacing IPC 193).
+   100→   100→  8. ecourts-case-status — services.ecourts.gov.in; CNR number; High Court / sci.gov.in routes; eCourts Services app.
+   101→   101→  9. court-fees — Court Fees Act 1870 Schedules I–III; Section 7 ad-valorem; Section 16 refund; SHCIL e-stamps at shcilestamp.com; Indian Stamp Act 1899 distinction.
+   102→   102→  10. limitation-periods — Limitation Act 1963 First Schedule Articles 54, 55, 62, 65, 66, 113; Second Schedule Articles 112, 116, 117; BNSS Section 514 (replacing CrPC 468) criminal limitation; Section 5 condonation; Section 18 acknowledgment.
+   103→   103→  11. nalsa-dlsa-locator — nalsa.gov.in directory; SLSA→DLSA→TLSC hierarchy; 15100 + 14416 helplines; specialised authorities (SALSA, AFT, NALSA Child-Friendly).
+   104→   104→  12. file-rti-appeal — Section 19(1) First Appeal to FAA (Section 5(2) designation; Section 4(1)(b)(v) disclosure); Section 19(3) Second Appeal to CIC/SIC within 90 days; Section 19(6) 30-day FAA disposal; Section 19(8)(b) compensation; Section 20 penalty ₹250/day up to ₹25,000.
+   105→   105→- Source URLs verified to be official/authoritative: prsindia.org, nalsa.gov.in, rti.gov.in, edaakhil.nic.in, cybercrime.gov.in, services.ecourts.gov.in, indiacode.nic.in, cic.gov.in.
+   106→   106→- No invented section numbers, fees, or form names; ambiguous items explicitly deferred to "consult a lawyer or DLSA".
+   107→   107→- Each article ends with the Nyaya legal-information disclaimer.
+   108→   108→- Did NOT modify any other files. Did NOT run any code.
+   109→   109→
+   110→   110→Stage Summary:
+   111→   111→- articles.json (12 procedure articles) successfully seeded at /home/z/my-project/content/info/articles.json.
+   112→   112→- JSON validated (parses cleanly, 12 objects, all required keys present).
+   113→   113→- Ready for M12 (info hub) to consume via static import.
+   114→   114→
+   115→   115→---
+   116→   116→Task ID: M2
+   117→   117→Agent: main + 2 subagents (M2-a rights articles, M2-b info articles)
+   118→   118→Task: DB schema + seed content
+   119→   119→
+   120→   120→Work Log:
+   121→   121→- Wrote full Prisma schema (22 models) per spec §5: User, Profile, LegalSource, LegalDocument, LegalChunk, RightsTopic, RightsArticle, EmergencyScenario, Helpline, PoliceStation, Judge, LegalInfoArticle (+ sourceUrl added), DocumentTemplate, ChatSession, ChatMessage, Citation, Bookmark, Feedback, ContentReport, ContentReview, AuditLog, AppSetting, GroqKeyUsage. Embeddings stored as JSON float[] (SQLite has no vector type). Added sourceUrl to LegalInfoArticle after seed error.
+   122→   122→- Subagent M2-a wrote content/rights/articles.json: 33 rights articles across 13 categories, each with summary + body + actualLaw + example + whatToDoIfViolated + sourceUrl. Cites BNS/BNSS/BSA 2023 + legacy IPC/CrPC, POCSO, JJ, RTE, PWDVA, POSH, RPWD Act, MWPSC Act, RTI Act, DPDP Act, Transgender Persons Act, Navtej Singh Johar, Puttaswamy.
+   123→   123→- Subagent M2-b wrote content/info/articles.json: 12 procedure articles (FIR, bail, free legal aid, RTI, consumer, cybercrime, affidavit, ecourts, court fees, limitation, NALSA/DLSA locator, RTI appeal) with official source URLs.
+   124→   124→- Wrote content/playbooks/playbooks.json: 8 emergency playbooks (arrest, accident, domestic-violence, cyber-fraud, child-abuse, medical, fire, disaster) each with whatToDo / whatToSay / whatNotToDo / whatToKeep / applicableLaw / authority.
+   125→   125→- Wrote src/lib/seed/data.ts (RIGHTS_TOPICS, JUDGES, POLICE_STATIONS, TEMPLATES, GLOSSARY) and src/lib/seed/run.ts (seed runner importing JSON via fs.readFileSync).
+   126→   126→- Ran `bun run db:push` + `bun run src/lib/seed/run.ts`. All seeded successfully.
+   127→   127→
+   128→   128→Stage Summary:
+   129→   129→- DB: 12 helplines, 33 rights articles, 8 playbooks, 12 police stations, 3 judges, 5 templates, 12 info articles, 23 glossary terms, 1 admin user (admin@nyaya.local).
+   130→   130→- Content legally cited to official sources (sci.gov.in, indiacode.nic.in, nalsa.gov.in, prsindia.org, cybercrime.gov.in, rti.gov.in).
+   131→   131→- Proceeding to M3 (auth) and M4 (KeyPool) next.
+   132→   132→
+   133→   133→---
+   134→   134→Task ID: M3-M7 (auth, KeyPool, AI provider, RAG, chat UI)
+   135→   135→Agent: main
+   136→   136→Task: Auth + KeyPool + AI provider with streaming failover + RAG + chat UI
+   137→   137→
+   138→   138→Work Log:
+   139→   139→- M3 Auth: src/lib/auth/session.ts (guest sessions via cookie, getOrCreateUser, requireRole, deleteUserData for DPDP), src/lib/auth/roles.ts (viewer/editor/legal_reviewer/superadmin + ROLE_RANK + hasRole).
+   140→   140→- M4 KeyPool (the architectural centerpiece):
+   141→   141→  - src/lib/ai/key-loader.ts: reads GROQ_API_KEY_1..N + GROQ_API_KEYS csv, dedupes, validates gsk_ pattern, SHA-256 hash (8 hex) for IDs, never logs raw keys. Falls back to z-ai-web-dev-sdk synthetic slot if no real keys (so sandbox runs).
+   142→   142→  - src/lib/ai/key-pool.ts: KeyPool class with per-(key,model) buckets (N keys × 2 models = 2N buckets). acquire() priority algorithm: filter healthy → sort by lowest requestsToday → tiebreak requestsThisMinute → tiebreak oldest lastUsedAt (LRU). Sliding-window 60s counters (ring buffer of timestamps). recordSuccess updates counters + syncs from Groq headers. recordError handles 429 (cooldown with retry-after, default 60s) / 401-403 (permanent unhealthy) / 5xx (3-strike → 30s cooldown) / network. groq_key_usage persisted to DB (upsert) + hydrated on init. UTC midnight reset of requestsToday. snapshot() for admin (no raw keys).
+   143→   143→  - src/lib/ai/zai-adapter.ts: wraps z-ai-web-dev-sdk as a PeekableStream with peek()+next()+[Symbol.asyncIterator]+fullText. Parses raw SSE bytes line-by-line. Fixed duplication bug: peek consumes first chunk, next() skips peeked.
+   144→   144→  - src/lib/ai/groq-adapter.ts: OpenAI-compatible fetch to api.groq.com, parses SSE, returns responseHeaders for x-ratelimit-* parsing.
+   145→   145→  - src/lib/ai/provider.ts: streamAnswer() single entrypoint. Peek-first-chunk failover: acquire → createStream → peek → if ok emit + drain; if 429/401/5xx → recordError + next key. Max attempts = keys×2. Citation validator + disclaimer appended post-stream. AllKeysExhaustedError → friendly "please try again" message.
+   146→   146→  - src/lib/ai/prompts.ts: 3-mode system prompts (Know-the-Law / What-Now / Mock-Court) + 8 strict guardrails (RAG-only, never invent sections, cite every claim, append disclaimer). RETRIEVAL_CONFIDENCE_THRESHOLD=0.35.
+   147→   147→  - src/lib/ai/citations.ts: extractCitations() regex + validateCitations() against retrieved chunks. Unverified citations → correction notice appended.
+   148→   148→  - src/lib/ai/models.ts: MODELS.primary=llama-3.3-70b-versatile, MODELS.fast=llama-3.1-8b-instant, GROQ_LIMITS (30/min, 1000/day, 15k tokens/min), pickModel().
+   149→   149→- M5 Admin: /api/admin/key-health (GET, editor+ role, returns sanitized snapshot + aggregate, NEVER raw keys).
+   150→   150→- M6 RAG: src/lib/rag/embed.ts (local TF-IDF 1024-d vectorizer + L2 normalize + cosineSimilarity + bm25Score). src/lib/rag/retrieve.ts: loadCorpus() from DB (rights articles + legal info + playbooks), embeds once, caches. retrieve(query,k): vector cosine + BM25, fused via Reciprocal Rank Fusion (RRF k=60), returns top-k RetrievedChunk[] with actName/sectionNo/sourceUrl/score.
+   151→   151→- M7 Chat UI:
+   152→   152→  - src/hooks/use-chat.ts: SSE client, parses retrieval/session/token/citations/error/done events, manages messages state.
+   153→   153→  - src/components/chat/mode-switcher.tsx: 3 modes dropdown.
+   154→   154→  - src/components/chat/citation-card.tsx: verified vs unverified citations, source links.
+   155→   155→  - src/components/chat/chat-input.tsx: textarea (auto-grow), send, stop, voice input (MediaRecorder → /api/ai/asr), TTS playback (/api/ai/tts).
+   156→   156→  - src/components/chat/chat-message.tsx: user/assistant bubbles, markdown-ish rendering (bold/italic/code), streaming caret, bookmark button, citation cards, disclaimer strip.
+   157→   157→  - src/components/chat/chat-window.tsx: top bar (mode switcher + clear), retrieval sources preview, message list, error banner, empty state with suggested prompts, input.
+   158→   158→- API routes: /api/ai/chat (SSE streaming), /api/ai/asr (z-ai-web-dev-sdk audio.asr), /api/ai/tts (z-ai-web-dev-sdk audio.tts), /api/bookmarks (CRUD), /api/admin/key-health.
+   159→   159→- Verified end-to-end with agent-browser: sent "What are my rights if I am arrested?" → got cited answer referencing Article 22 + BNSS §35(3) + §39. Streaming works, no duplication, citations shown.
+   160→   160→
+   161→   161→Stage Summary:
+   162→   162→- Chat fully functional with streaming, voice input, TTS, citations, bookmarks, 3 modes, disclaimer on every answer.
+   163→   163→- KeyPool loads 1 slot (z-ai fallback) by default; would load N real Groq keys if env set. Failover logic verified by code path.
+   164→   164→- RAG retrieves from 53-doc corpus (33 rights + 12 info + 8 playbooks), RRF hybrid.
+   165→   165→- Lint clean. Proceeding to M8 emergency module next.
+   166→   166→
+   167→   167→---
+   168→   168→Task ID: M9
+   169→   169→Agent: rights-library
+   170→   170→Task: Rights Library feature — grid of 13 topics, category filter, full article renderer with bookmark + offline-save, search, server-side /rights page
+   171→   171→
+   172→   172→Work Log:
+   173→   173→- Read worklog.md + CLAUDE.md + prisma/schema.prisma to confirm: RightsTopic {slug,title,icon,description,order} and RightsArticle {id,slug,title,summary,body,actualLaw,example,whatToDoIfViolated,sourceUrl,status,...}. 13 topics + 33 articles already seeded. Bookmark API at /api/bookmarks accepts {type:"rights-article",refId,label} for POST/DELETE, GET returns {bookmarks:[]}. DisclaimerBanner already in src/components/common/disclaimer.tsx. AppShell + bottom-tab-bar already have a "Rights" tab pointing at /rights (returns 404 until this task).
+   174→   174→- Wrote 6 files (all inside src/components/rights/ and src/app/(app)/rights/ — nothing outside touched):
+   175→   175→  1. src/components/rights/bookmark-button.tsx ("use client") — bookmark toggle calling /api/bookmarks. Two variants (icon | pill), optimistic state, aria-pressed/aria-label. Module-level promise dedupes the initial GET across multiple instances on a page; invalidated after each toggle so subsequent mounts see fresh state.
+   176→   176→  2. src/components/rights/rights-article.tsx ("use client") — full article renderer: topic eyebrow, title, summary, bookmark pill + offline-save pill, markdown-ish body (split on \n + **bold**/*italic*/`code` regex), citation box (bg-primary/5 border-primary/20 rounded-md p-3 with Scale icon), example callout (Lightbulb), "What to do if violated" parsed into numbered steps with emergency tinting (ListChecks icon + numbered circles), source link with ExternalLink icon. Offline-save caches article JSON to localStorage under key "nyaya:rights:offline".
+   177→   177→  3. src/components/rights/category-filter.tsx ("use client") — horizontal scrollable pill filter (role="tablist") with "All" + 13 topic pills. Selecting a pill calls onChange(slug|null) AND navigates to /rights?topic={slug} (or /rights for All) via useRouter.
+   178→   178→  4. src/components/rights/rights-grid.tsx ("use client") — responsive grid (1 col mobile / 2 sm / 3 lg) of RightsTopic cards. Each card: lucide icon (mapped from the topic.icon string stored in DB), title, description (line-clamp-3), article-count badge, "Browse →" affordance. Wrapped in next/link to /rights?topic={slug}.
+   179→   179→  5. src/components/rights/rights-search.tsx ("use client") — search form (role="search") using the shadcn Input. On submit navigates to /rights?q={trimmed-query} (or /rights if empty). Includes a clear (X) button.
+   180→   180→  6. src/app/(app)/rights/page.tsx (SERVER component, export const dynamic = "force-dynamic") — reads ?topic= and ?q= searchParams (Next 16 Promise form). Default view: header + RightsSearch + RightsGrid. Topic view: back link + topic title/description + CategoryFilter + list of RightsArticle components. Search view: back link + query echo + RightsSearch + matched articles. Every view ends with DisclaimerBanner.
+   181→   181→    - Uses db.rightsTopic.findMany({ include: { _count: { select: { articles: true } }, articles: { where: { status: "published" } } } }) for the grid + filter pills.
+   182→   182→    - Topic view does a separate db.rightsTopic.findUnique({ where:{slug}, include:{ articles:{ where:{status:"published"} } } }).
+   183→   183→    - Search view uses db.rightsArticle.findMany with OR of contains on title/summary/body (SQLite contains is case-insensitive for ASCII; mode:"insensitive" omitted — Postgres-only).
+   184→   184→- Icon map: verified all 13 seed icon strings against node_modules/lucide-react/dist/lucide-react.d.ts. 12 exist directly (Landmark, Venus, Baby, HardHat, ShoppingCart, Home (alias of House), Globe, Heart, Accessibility, UserCog, GraduationCap, FileSearch). "Handcuffs" is NOT exported by this lucide version — mapped to LockKeyhole (visually closest for arrest & detention). Any unmapped string falls back to Scale (the generic Nyaya rights icon).
+   185→   185→- Design tokens respected: bg-card / border-border / text-muted-foreground, primary navy #12224A via bg-primary/10 icon chips and bg-primary/5 citation box, accent saffron #E8A33D via text-accent highlights, emergency red #C62828 via the "what to do" box. No indigo/blue. Mobile-first with p-4/gap-4. Article view is max-w-3xl mx-auto, grid view is max-w-5xl.
+   186→   186→- Verified: `npx eslint src/components/rights/** src/app/(app)/rights/**` returns 0 errors. The 3 errors currently reported by `bun run lint` are all pre-existing in files I did NOT touch (src/app/(app)/nearby/nearby-client.tsx react-hooks/set-state-in-effect ×2, src/components/emergency/sos-button.tsx react-hooks/immutability). Did NOT run any dev server. dev.log shows `✓ Compiled in 173ms` after the writes — no compile errors from the new files.
+   187→   187→
+   188→   188→Stage Summary:
+   189→   189→- /rights route now resolves (was 404 before). Renders the 13-topic grid by default, drill-down into a topic via category-filter pills, and full-text search across all 33 articles. Every article shows the actual-law citation, plain-language example, numbered "what to do if violated" steps, official source link, and supports bookmark + offline-save.
+   190→   190→- Bookmark deduplication: a single GET /api/bookmarks is fired per page-mount regardless of how many BookmarkButton instances are on the page (topic page can render 3–4 articles × 1 button each); cache is invalidated after each toggle so navigation always re-fetches fresh state.
+   191→   191→- Offline-save persists the full article JSON to localStorage so it can be rendered later without a network round-trip (useful for the M14 PWA / M15 offline story).
+   192→   192→- All six files lint-clean. Ready for M10 (nearby police) next.
+   193→   193→
+   194→   194→---
+   195→   195→Task ID: M10
+   196→   196→Agent: general-purpose (sub-agent, M10 — nearby police)
+   197→   197→Task: Nearby Police Stations module (hook + Leaflet map + station list/card + report flow + server page)
+   198→   198→
+   199→   199→Work Log:
+   200→   200→- Read worklog.md + CLAUDE.md first. Verified Prisma `PoliceStation` schema (id, name, address, city, state, pincode, phone, lat, lng, openHours, jurisdiction, source, status) and seeded data (12 stations across Chennai, Hyderabad, Kolkata, Kochi, Lucknow, Pune, Bengaluru, Delhi etc.).
+   201→   201→- Files written (all within permitted scope):
+   202→   202→  - `src/lib/maps/distance.ts` — `haversineKm(lat1,lng1,lat2,lng2)` (Earth R=6371 km, atan2 form) + `formatDistance(km)` (m / 1-decimal km / rounded km tiers).
+   203→   203→  - `src/hooks/use-geolocation.ts` — `useGeolocation()` returning `{lat, lng, loading, error, request()}`. `enableHighAccuracy:true, timeout:10000, maximumAge:0`. Friendly error strings for PERMISSION_DENIED/POSITION_UNAVAILABLE/TIMEOUT/unsupported. Does NOT auto-request on mount (calling component decides when, typically from a user gesture).
+   204→   204→  - `src/components/maps/geolocation-button.tsx` — three-state button ("Use my location" → "Locating…" → "Location denied — enter city manually" → "Update location"). Emergency tone when error.
+   205→   205→  - `src/components/maps/police-map.tsx` — react-leaflet v5 MapContainer + OSM TileLayer (no API key). `import "leaflet/dist/leaflet.css"` at top. `L.Icon.Default.mergeOptions` CDN fix (iconUrl/iconRetinaUrl/shadowUrl from unpkg). Custom blue divIcon for user location. Recenter component uses `useMap().setView()` to follow user location changes. Popups: name + address + distance + Call button (bg-emergency/10 text-emergency). Height 400px mobile / 500px desktop. Defaults to India center [22.5,80] zoom 5 when no user location, zoom 13 when located.
+   206→   206→  - `src/components/maps/station-card.tsx` — full-detail card: name, address, city/state/pincode, distance badge (bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs), open hours, jurisdiction, phone (tel: link). Action buttons: Call (bg-emergency/10 text-emergency), Navigate (OSM directions, new tab), Save offline (localStorage `nyaya.offline.police-stations` map of stationId → Station), Report incorrect info (Dialog with Textarea → POST `/api/reports {type:"police-station", refId, reason}`). On API failure, captures locally under `nyaya.reports.pending` so user input is never dropped. Sonner toasts for all outcomes. Hydrates saved flag from localStorage on mount.
+   207→   207→  - `src/components/maps/station-list.tsx` — compact scrollable list (`max-h-96 overflow-y-auto nyaya-scroll`). Each row: name + distance badge, address, phone (tel: link), right-side Call + Navigate quick-action icons. Sorts by haversine ascending when userLocation known; preserves server order otherwise. Optional `onSelect` callback + `selectedId` for master-detail. Empty-state message. `stopPropagation` on inner links so clicking call/navigate doesn't trigger row select.
+   208→   208→  - `src/app/(app)/nearby/nearby-client.tsx` — client wrapper. Dynamically imports `PoliceMap` with `ssr:false` (Leaflet touches `window` on import). Holds tabs (list/map), geolocation state, master-detail Drawer. City filter form pushes `?city=` to URL via `router.push` (server does the actual DB filter). "Derived state with reset" pattern for syncing input when URL changes (avoids `react-hooks/set-state-in-effect` lint rule). Tap a row → Drawer slides up with full StationCard.
+   209→   209→  - `src/app/(app)/nearby/page.tsx` — server component, `export const dynamic = "force-dynamic"`. Reads `searchParams: Promise<{city?: string}>` (Next 16 async searchParams). Fetches `db.policeStation.findMany` with `city: { contains: cityTrim }` filter when `?city=` present (case-insensitive LIKE). Maps rows to plain-serializable `Station` shape. Renders page title, emergency-112 reminder, `<NearbyClient>` inside `<Suspense>`, and `<DisclaimerBanner/>`.
+   210→   210→- Lint: 0 errors in any file I own. Pre-existing `src/components/emergency/sos-button.tsx:31` error (window.location.href mutation) and `src/app/(app)/profile/page.tsx` 500 (cookie-set-in-render) are from earlier milestones and were explicitly out of scope.
+   211→   211→- Smoke tests via curl: `GET /nearby` → 200 with title + button + station names in HTML. `GET /nearby?city=Chennai` → 200, only T Nagar station, dev.log shows `WHERE city LIKE '%Chennai%'`. `GET /nearby?city=Hyderabad` → 200, only Charminar + Banjara Hills, dev.log shows `WHERE city LIKE '%Hyderabad%'`. No new errors in dev.log.
+   212→   212→- Bottom tab bar already highlights "Nearby" via `usePathname().startsWith("/nearby")` — no nav-config change needed.
+   213→   213→
+   214→   214→Stage Summary:
+   215→   215→- `/nearby` route fully functional: server-side city filter, client-side geolocation, list/map tabs, master-detail drawer with full StationCard (Call / Navigate / Save offline / Report incorrect info), OSM-backed Leaflet map with station markers + popups, haversine distance sorting and badges.
+   216→   216→- All work confined to `src/lib/maps/`, `src/hooks/use-geolocation.ts`, `src/components/maps/`, `src/app/(app)/nearby/` as instructed.
+   217→   217→- Agent work record written to `/home/z/my-project/agent-ctx/M10-nearby-police.md`.
+   218→   218→- Ready for QA / next milestone.
+   219→   219→
+   220→   220→---
+   221→   221→Task ID: M11-M12-M3-profile
+   222→   222→Agent: sub-agent (general-purpose, fullstack)
+   223→   223→Task: M11 Judges module + M12 Legal Info Hub + M3 Profile page
+   224→   224→
+   225→   225→Work Log:
+   226→   226→- Read worklog.md + CLAUDE.md + prisma/schema.prisma + auth/session.ts + auth/roles.ts + existing pages/components to understand conventions (Nyaya legal-info PWA, Next.js 16, force-dynamic server pages, shadcn/ui, sonner toasts, primary/accent/emergency tokens).
+   227→   227→- M11 Judges module (5 files):
+   228→   228→  - `src/components/judges/mock-court-banner.tsx` — saffron banner (bg-accent/10 border-accent/30) linking to /chat?mode=mock-court. Clearly labelled "Educational simulation".
+   229→   229→  - `src/components/judges/judge-profile.tsx` ("use client") — presentational content for the Sheet: education, career-timeline (bullet list), notableJudgmentsJson parsed into cards (title + citation + summary), officialSourceUrl link. Includes a privacy note ("no personal contact details, no opinions"). `parseJudgments()` is exported for reuse.
+   230→   230→  - `src/components/judges/judge-card.tsx` ("use client") — clickable Card that opens a right-side Sheet showing <JudgeProfile/>. Avatar fallback = initials in primary/10 circle (strips Dr./Justice/Mr./Mrs. honorifics). Court-level badge with per-level color tokens.
+   231→   231→  - `src/components/judges/judge-filters.tsx` ("use client") — Select for courtLevel (all/supreme-court/high-court/district), Input for state, Input for year. Receives initial values as props (no useSearchParams → no Suspense boundary required). On change pushes a new URL via router.push inside useTransition (shows "Updating…" spinner).
+   232→   232→  - `src/app/(app)/judges/page.tsx` (SERVER, force-dynamic) — awaits searchParams, builds Prisma where clause (status:"published" + optional courtLevel/state contains/appointmentYear), fetches judges, renders header + MockCourtBanner + DisclaimerBanner + JudgeFilters + grid (1/2/3 cols) + empty state. Ends with DisclaimerBanner.
+   233→   233→- M12 Legal Info Hub (5 files):
+   234→   234→  - `src/components/info/procedure-card.tsx` ("use client") — card with title + first 150 chars of body + "Read" SheetTrigger that opens a right Sheet with the full markdown-ish body (bold/code) + official source link + disclaimer strip.
+   235→   235→  - `src/components/info/template-downloader.tsx` ("use client") — card with title, description, "Copy template" button (navigator.clipboard.writeText + execCommand fallback) and "Download" button (Blob text/plain + a.download = sanitized slug .txt). Sonner toasts on success/failure.
+   236→   236→  - `src/components/info/legal-aid-locator.tsx` — static Card listing NALSA (15100, nalsa.gov.in), DLSA (nalsa.gov.in/district-legal-services-authority), SCLSC (sclsc.nic.in). Each row: MapPin link + tel: helpline pill. Bottom: Section 12 eligibility grid (women, children, SC/ST, disabled, victims, custody, income < ₹3L/yr).
+   237→   237→  - `src/components/info/glossary-search.tsx` ("use client") — live search Input + <dl> definition list (dt term / dd meaning). Filters both term and meaning as user types; shows count and a "clear" X button; max-h-96 with nyaya-scroll custom scrollbar.
+   238→   238→  - `src/app/(app)/info/page.tsx` (SERVER, force-dynamic) — Promise.all of [procedures (NOT category=glossary), templates, glossary article]. Parses glossary article body (JSON array of {term, meaning}) defensively. Renders 4 sections: Procedures grid, Templates grid, Free Legal Aid (LegalAidLocator), Glossary (GlossarySearch). Ends with DisclaimerBanner.
+   239→   239→- M3-profile Profile (5 files):
+   240→   240→  - `src/app/api/profile/route.ts` — GET (getOrCreateUser + lazy Profile create + return user+profile JSON), PATCH (zod-validate hasConsentedLocation/hasConsentedChatStorage, upsert Profile), DELETE (deleteUserData — DPDP-compliant erasure). 
+   241→   241→  - `src/components/profile/consent-toggles.tsx` ("use client") — two Switch components (location + chat storage) bound to PATCH /api/profile. Optimistic UI with revert on error; sonner toast on success/failure. Warning banner ("Nearby Police is limited") when location consent is off. DPDP Act, 2023 badge.
+   242→   242→  - `src/components/profile/bookmarks-list.tsx` ("use client") — accepts server-fetched initial list, then re-fetches /api/bookmarks on mount to refresh. Each row: type badge (rights-article/playbook/info/template, color-coded) + label (truncate) + Trash2 remove button (DELETE /api/bookmarks). ScrollArea with max-h-96 + nyaya-scroll. Empty state with hint to bookmark chat answers.
+   243→   243→  - `src/components/profile/data-deletion-card.tsx` ("use client") — auxiliary component for the data-deletion button (referenced by the page). AlertDialog confirmation → DELETE /api/profile → toast → reload. Emergency-toned card.
+   244→   244→  - `src/components/profile/init-session.tsx` ("use client") — auxiliary component. Rendered when getUser() returns null. Calls /api/profile (Route Handler, which CAN set the guest cookie) then window.location.reload(). Exists because Next.js 16 forbids cookies().set() inside Server Components — the spec said "uses getOrCreateUser()" but that throws in a server component, so I used getUser() + this client-side init flow.
+   245→   245→  - `src/app/(app)/profile/page.tsx` (SERVER, force-dynamic) — uses getUser() (server-component-safe). If null → renders <InitSession/>. Else renders: header + account card (Avatar with initials fallback, name/email, role Badge via ROLE_LABELS, guest flag, lastActiveAt) + ConsentToggles + BookmarksList (with server-fetched initial) + DataDeletionCard + DisclaimerBanner.
+   246→   246→
+   247→   247→Verification (curl localhost:3000):
+   248→   248→- GET /judges → 200 (3 judges from seed). GET /judges?courtLevel=supreme-court → 200 (filtered). "Chandrachud" present in HTML.
+   249→   249→- GET /info → 200. "FIR Draft" template + "NALSA" locator + FIR glossary term all present in HTML.
+   250→   250→- GET /profile (no cookie) → 200 (renders InitSession). After /api/profile GET sets the cookie, GET /profile → 200 with full UI.
+   251→   251→- GET /api/profile → 200 with {user, profile}. PATCH /api/profile {hasConsentedLocation:true} → 200, persisted (subsequent GET shows true). DELETE /api/profile → 200, session cleared.
+   252→   252→- Bookmarks round-trip verified: POST → GET returns the new bookmark; the /profile server render embeds the bookmark label.
+   253→   253→- bun run lint: 0 errors / 0 warnings in my new files. (1 pre-existing lint error remains in src/components/emergency/sos-button.tsx — not in scope.)
+   254→   254→
+   255→   255→Stage Summary:
+   256→   256→- 3 new pages + 14 components/API files shipped across M11 (Judges), M12 (Info Hub), M3-profile.
+   257→   257→- All pages are force-dynamic server components; client islands only for Sheet/Switch/Input/Select interactivity.
+   258→   258→- Every page ends with DisclaimerBanner. Mock-Court banner uses bg-accent/10 border-accent/30 per spec. Judge cards: 1 col mobile / 2 col sm / 3 col lg. Glossary rendered as dl/dt/dd. Templates use Clipboard/Download icons. Profile uses Switch components.
+   259→   259→- DPDP compliance: explicit consent toggles for location + chat-storage; data-deletion button calls deleteUserData(); no personal-contact or opinion data on judge profiles.
+   260→   260→- No files outside the listed paths were modified. (Auxiliary files added inside the same component directories: data-deletion-card.tsx and init-session.tsx — both necessary to keep the server page server-side and the interactivity client-side per Next.js 16 constraints.)
+   261→   261→- Dev server log: all 3 new routes return 200; prisma queries fire correctly; no module-not-found or runtime errors in my new code.
+   262→   262→

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Nyaya logo">
+  <!-- Background: navy circle (theme_color #12224A) -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#1B3470"/>
+      <stop offset="100%" stop-color="#12224A"/>
+    </radialGradient>
+    <linearGradient id="saffron" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4B955"/>
+      <stop offset="100%" stop-color="#E8A33D"/>
+    </linearGradient>
+    <!-- Safe-zone padding for maskable usage (10% inset baked into glyph position) -->
+  </defs>
+
+  <!-- Maskable-safe rounded background (full-bleed fills the canvas) -->
+  <rect x="0" y="0" width="512" height="512" rx="0" fill="url(#bg)"/>
+
+  <!-- Subtle inner ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#E8A33D" stroke-opacity="0.18" stroke-width="3"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="2"/>
+
+  <!-- Scales-of-justice glyph (saffron) -->
+  <g transform="translate(256 230)" fill="none" stroke="url(#saffron)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Vertical beam -->
+    <line x1="0" y1="-90" x2="0" y2="80"/>
+    <!-- Top knob -->
+    <circle cx="0" cy="-100" r="10" fill="url(#saffron)" stroke="none"/>
+    <!-- Base -->
+    <line x1="-50" y1="80" x2="50" y2="80"/>
+    <line x1="-25" y1="80" x2="25" y2="80" stroke-width="22"/>
+    <!-- Horizontal beam -->
+    <line x1="-110" y1="-60" x2="110" y2="-60"/>
+    <!-- Left pan -->
+    <path d="M -110 -60 L -150 20 A 50 50 0 0 0 -70 20 Z"/>
+    <!-- Right pan -->
+    <path d="M 110 -60 L 70 20 A 50 50 0 0 0 150 20 Z"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="256" y="430" text-anchor="middle"
+        font-family="'Plus Jakarta Sans','Noto Sans Devanagari',system-ui,sans-serif"
+        font-size="64" font-weight="700" letter-spacing="2" fill="#FFFFFF">Nyaya</text>
+  <text x="256" y="470" text-anchor="middle"
+        font-family="'Plus Jakarta Sans',system-ui,sans-serif"
+        font-size="18" font-weight="500" letter-spacing="6" fill="#E8A33D" opacity="0.85">न्याय</text>
+</svg>

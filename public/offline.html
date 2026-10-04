@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12224A" />
+    <title>You are offline — Nyaya</title>
+    <style>
+      :root {
+        --navy: #12224A;
+        --saffron: #E8A33D;
+        --emergency: #C62828;
+        --bg: #ffffff;
+        --muted: #475569;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: #0f172a;
+        font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans",
+          "Segoe UI", Roboto, "Noto Sans Devanagari", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 32px 20px;
+        padding-bottom: max(32px, env(safe-area-inset-bottom));
+        text-align: center;
+      }
+      .logo {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        background: var(--navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        box-shadow: 0 12px 32px rgba(18, 34, 74, 0.18);
+      }
+      .logo svg {
+        width: 56px;
+        height: 56px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(233, 163, 61, 0.12);
+        color: var(--saffron);
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 999px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        margin: 0 0 12px 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--navy);
+      }
+      p.lead {
+        margin: 0 0 32px 0;
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 480px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+      a.btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      a.btn-primary {
+        background: var(--navy);
+        color: #ffffff;
+      }
+      a.btn-primary:hover { background: #1b3470; }
+      a.btn-emergency {
+        background: var(--emergency);
+        color: #ffffff;
+      }
+      a.btn-emergency:hover { background: #b21f1f; }
+      a.btn-outline {
+        background: transparent;
+        color: var(--navy);
+        border-color: rgba(18, 34, 74, 0.2);
+      }
+      a.btn-outline:hover { background: rgba(18, 34, 74, 0.05); }
+      .help-row {
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .help-row a {
+        color: var(--navy);
+        text-decoration: underline;
+      }
+      .emergency-pill {
+        margin-top: 16px;
+        padding: 10px 14px;
+        background: rgba(198, 40, 40, 0.08);
+        border: 1px solid rgba(198, 40, 40, 0.2);
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--emergency);
+        max-width: 480px;
+      }
+      .emergency-pill strong { font-weight: 700; }
+      .disclaimer {
+        margin-top: 28px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        font-size: 12px;
+        line-height: 1.5;
+        color: #92400e;
+        max-width: 480px;
+        text-align: left;
+      }
+      .disclaimer strong { display: block; margin-bottom: 4px; }
+      .footer {
+        margin-top: 24px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(256 256) scale(1.6) translate(-256 -256)" fill="none" stroke="#E8A33D" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="256" y1="160" x2="256" y2="330" />
+          <circle cx="256" cy="150" r="12" fill="#E8A33D" stroke="none" />
+          <line x1="206" y1="330" x2="306" y2="330" />
+          <line x1="146" y1="190" x2="366" y2="190" />
+          <path d="M 146 190 L 106 270 A 50 50 0 0 0 186 270 Z" />
+          <path d="M 366 190 L 326 270 A 50 50 0 0 0 406 270 Z" />
+        </g>
+      </svg>
+    </div>
+    <span class="eyebrow">● Offline</span>
+    <h1>You are offline</h1>
+    <p class="lead">
+      Emergency playbooks and saved rights articles are still available.
+      The AI assistant, nearby-police map, and live legal info require a connection.
+    </p>
+
+    <div class="actions">
+      <a class="btn btn-emergency" href="/emergency">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Open Emergency
+      </a>
+      <a class="btn btn-primary" href="/rights">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>
+        Saved Rights
+      </a>
+      <a class="btn btn-outline" href="/">Retry home</a>
+    </div>
+
+    <div class="emergency-pill">
+      <strong>Real emergency? Call 112 or 100 now.</strong>
+      Network or not, these numbers work from any phone.
+    </div>
+
+    <div class="disclaimer">
+      <strong>Legal information, not legal advice.</strong>
+      Nyaya does not replace a licensed advocate, the police, or emergency services. Always verify with official sources or a qualified lawyer for your specific situation.
+    </div>
+
+    <div class="footer">Nyaya · Know Your Legal Rights · India</div>
+
+    <script>
+      // Auto-reload when connectivity returns so the user is bounced back
+      // to the page they originally requested.
+      window.addEventListener("online", function () {
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>
