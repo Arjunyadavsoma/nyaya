@@ -46,11 +46,11 @@ async function loadCorpus(): Promise<CorpusDoc[]> {
         embedding: embed(text),
       });
     }
-    // Legal info articles
+    // Legal info articles (procedures, templates, etc.)
     const infos = await db.legalInfoArticle.findMany({
       where: { status: "published", category: { not: "glossary" } },
     });
-    for (const i of infos) {
+    for (const i of infos as Array<{ title: string; body: string; sourceUrl?: string | null; slug: string }>) {
       const text = `${i.title}\n${i.body}`;
       docs.push({
         id: `info:${i.slug}`,
