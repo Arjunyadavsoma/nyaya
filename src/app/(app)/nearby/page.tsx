@@ -48,13 +48,15 @@ export default async function NearbyPage({ searchParams }: PageProps) {
       })
     : [];
 
-  // Get distinct states
+  // Get distinct states — use raw query since LibSqlDb doesn't support select/distinct
   const allStates = await db.policeStation.findMany({
-    select: { state: true },
-    distinct: ["state"],
-    orderBy: { state: "asc" },
+    orderBy: { name: "asc" },
   });
-  const stateList = allStates.map((s) => s.state).filter(Boolean) as string[];
+  const stateSet = new Set<string>();
+  for (const s of allStates as Array<{ state?: string | null }>) {
+    if (s.state) stateSet.add(s.state);
+  }
+  const stateList = [...stateSet].sort();
 
   const stations: Station[] = rows.map((s) => ({
     id: s.id,

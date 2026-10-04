@@ -17,28 +17,29 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
   const { topic: topicSlug, q } = await searchParams;
   const query = (q ?? "").trim();
 
-  // Always fetch all topics (with published article counts).
-  // Used for the grid on the default view and for the filter pills elsewhere.
+  // Always fetch all topics
   const topics = await db.rightsTopic.findMany({
-    include: {
-      _count: { select: { articles: true } },
-      articles: {
-        where: { status: "published" },
-        select: { id: true },
-      },
-    },
     orderBy: { order: "asc" },
   });
 
-  const topicCards = topics.map((t) => ({
+  // Fetch article counts per topic (separate query — LibSqlDb doesn't support include)
+  const allArticles = await db.rightsArticle.findMany({
+    where: { status: "published" },
+  });
+  const articleCounts = new Map<string, number>();
+  for (const a of allArticles as Array<{ topicId?: string }>) {
+    if (a.topicId) articleCounts.set(a.topicId, (articleCounts.get(a.topicId) ?? 0) + 1);
+  }
+
+  const topicCards = (topics as Array<{ slug: string; title: string; icon?: string | null; description?: string | null; id: string }>).map((t) => ({
     slug: t.slug,
     title: t.title,
     icon: t.icon,
     description: t.description,
-    articleCount: t.articles.length,
+    articleCount: articleCounts.get(t.id) ?? 0,
   }));
 
-  const filterTopics = topics.map((t) => ({ slug: t.slug, title: t.title }));
+  const filterTopics = (topics as Array<{ slug: string; title: string }>).map((t) => ({ slug: t.slug, title: t.title }));
 
   // ── Search mode ──────────────────────────────────────────────
   if (query) {
@@ -53,9 +54,19 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
           { body: { contains: query } },
         ],
       },
-      include: { topic: true },
       orderBy: { title: "asc" },
     });
+
+    // Fetch topic info separately (LibSqlDb doesn't support include)
+    const topicMap = new Map<string, { slug: string; title: string }>();
+    for (const t of topics as Array<{ id: string; slug: string; title: string }>) {
+      topicMap.set(t.id, { slug: t.slug, title: t.title });
+    }
+    const resultsWithTopic = (results as Array<{ topicId?: string; slug: string; title: string; summary: string; body: string; actualLaw: string; example?: string | null; whatToDoIfViolated?: string | null; sourceUrl: string }>).map((a) => ({
+      ...a,
+      topicSlug: a.topicId ? topicMap.get(a.topicId)?.slug ?? "" : "",
+      topicTitle: a.topicId ? topicMap.get(a.topicId)?.title ?? "" : "",
+    }));
 
     return (
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
@@ -71,10 +82,10 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
             Search results
           </h1>
           <p className="text-sm text-muted-foreground">
-            {results.length === 0
+            {resultsWithTopic.length === 0
               ? `No articles found for "${query}".`
-              : `${results.length} ${
-                  results.length === 1 ? "article" : "articles"
+              : `${resultsWithTopic.length} ${
+                  resultsWithTopic.length === 1 ? "article" : "articles"
                 } found for "${query}".`}
           </p>
         </header>
@@ -82,11 +93,11 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
         <RightsSearch defaultValue={query} />
 
         <div className="space-y-8">
-          {results.map((a) => (
+          {resultsWithTopic.map((a) => (
             <RightsArticle
-              key={a.id}
+              key={a.id ?? a.slug}
               article={{
-                id: a.id,
+                id: a.id ?? a.slug,
                 slug: a.slug,
                 title: a.title,
                 summary: a.summary,
@@ -95,8 +106,8 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
                 example: a.example,
                 whatToDoIfViolated: a.whatToDoIfViolated,
                 sourceUrl: a.sourceUrl,
-                topicSlug: a.topic.slug,
-                topicTitle: a.topic.title,
+                topicSlug: a.topicSlug,
+                topicTitle: a.topicTitle,
               }}
             />
           ))}
@@ -111,12 +122,6 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
   if (topicSlug) {
     const topic = await db.rightsTopic.findUnique({
       where: { slug: topicSlug },
-      include: {
-        articles: {
-          where: { status: "published" },
-          orderBy: { title: "asc" },
-        },
-      },
     });
 
     if (!topic) {
@@ -138,6 +143,14 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
       );
     }
 
+    // Fetch articles separately (LibSqlDb doesn't support include)
+    const topicArticles = await db.rightsArticle.findMany({
+      where: { status: "published" },
+      orderBy: { title: "asc" },
+    });
+    const topicObj = topic as { id: string; slug: string; title: string; description?: string | null };
+    const topicArticlesFiltered = (topicArticles as Array<{ id: string; topicId?: string; slug: string; title: string; summary: string; body: string; actualLaw: string; example?: string | null; whatToDoIfViolated?: string | null; sourceUrl: string }>).filter(a => a.topicId === topicObj.id);
+
     return (
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <header className="space-y-2">
@@ -147,23 +160,23 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
           >
             <ArrowLeft className="h-4 w-4" aria-hidden /> All rights
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">{topic.title}</h1>
-          {topic.description && (
+          <h1 className="text-2xl font-bold text-foreground">{topicObj.title}</h1>
+          {topicObj.description && (
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {topic.description}
+              {topicObj.description}
             </p>
           )}
         </header>
 
-        <CategoryFilter topics={filterTopics} activeSlug={topic.slug} />
+        <CategoryFilter topics={filterTopics} activeSlug={topicObj.slug} />
 
         <div className="space-y-8">
-          {topic.articles.length === 0 ? (
+          {topicArticlesFiltered.length === 0 ? (
             <div className="rounded-lg border border-border bg-card p-6 text-center text-sm text-muted-foreground">
               No articles published in this category yet.
             </div>
           ) : (
-            topic.articles.map((a) => (
+            topicArticlesFiltered.map((a) => (
               <RightsArticle
                 key={a.id}
                 article={{
@@ -176,8 +189,8 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
                   example: a.example,
                   whatToDoIfViolated: a.whatToDoIfViolated,
                   sourceUrl: a.sourceUrl,
-                  topicSlug: topic.slug,
-                  topicTitle: topic.title,
+                  topicSlug: topicObj.slug,
+                  topicTitle: topicObj.title,
                 }}
               />
             ))
