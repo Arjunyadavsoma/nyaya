@@ -27,7 +27,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
   useEffect(() => {
     if (taRef.current) {
       taRef.current.style.height = "auto";
-      taRef.current.style.height = Math.min(taRef.current.scrollHeight, 160) + "px";
+      taRef.current.style.height = Math.min(taRef.current.scrollHeight, 120) + "px";
     }
   }, [text]);
 
@@ -110,20 +110,21 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
   };
 
   return (
-    <div className="border-t border-border bg-background/95 backdrop-blur">
-      <div className="max-w-3xl mx-auto px-3 py-3">
+    <div className="border-t border-border bg-background/95 backdrop-blur-lg safe-bottom">
+      <div className="max-w-3xl mx-auto px-2 sm:px-3 py-2 sm:py-3">
+        {/* Unified input bar */}
         <div
           className={cn(
-            "flex items-end gap-2 rounded-2xl border bg-card transition-colors shadow-sm",
+            "flex items-end gap-1.5 sm:gap-2 rounded-2xl border bg-card transition-colors shadow-sm",
             text.trim() ? "border-primary/30" : "border-border"
           )}
         >
-          {/* Voice + TTS controls */}
-          <div className="flex flex-col gap-1 pb-1.5 pl-1.5">
+          {/* Left: voice + TTS (horizontal on mobile, vertical on desktop) */}
+          <div className="flex sm:flex-col gap-1 pb-1.5 pl-1.5 sm:pl-1.5">
             <button
               onClick={isRecording ? stopRecording : startRecording}
               className={cn(
-                "tap-target inline-flex items-center justify-center rounded-lg transition-colors h-8 w-8",
+                "inline-flex items-center justify-center rounded-lg transition-colors h-8 w-8 shrink-0",
                 isRecording
                   ? "bg-emergency/10 text-emergency"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -136,7 +137,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
             <button
               onClick={speak}
               className={cn(
-                "tap-target inline-flex items-center justify-center rounded-lg transition-colors h-8 w-8",
+                "inline-flex items-center justify-center rounded-lg transition-colors h-8 w-8 shrink-0",
                 isPlaying ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
               aria-label={isPlaying ? "Pause audio" : "Read last answer aloud"}
@@ -152,29 +153,29 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Ask about your legal rights… e.g. 'What are my rights if I'm arrested?'"
-            className="min-h-[44px] max-h-40 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none px-1 py-2.5"
+            placeholder="Ask about your legal rights…"
+            className="min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none px-1 py-2 text-sm"
             disabled={disabled}
             rows={1}
           />
 
-          {/* Send/Stop */}
-          <div className="pb-1.5 pr-1.5">
+          {/* Right: Send/Stop */}
+          <div className="pb-1.5 pr-1.5 shrink-0">
             {isStreaming ? (
               <Button
                 onClick={onStop}
                 variant="outline"
                 size="icon"
-                className="tap-target shrink-0 h-9 w-9 rounded-lg border-emergency/30 text-emergency hover:bg-emergency/10"
+                className="h-9 w-9 rounded-xl border-emergency/30 text-emergency hover:bg-emergency/10"
                 aria-label="Stop"
               >
-                <Square className="h-4 w-4" fill="currentColor" />
+                <Square className="h-3.5 w-3.5" fill="currentColor" />
               </Button>
             ) : (
               <Button
                 onClick={submit}
                 size="icon"
-                className="tap-target shrink-0 h-9 w-9 rounded-lg"
+                className="h-9 w-9 rounded-xl"
                 disabled={!text.trim() || disabled}
                 aria-label="Send"
               >
@@ -184,8 +185,8 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, lastAssistant
           </div>
         </div>
 
-        {/* Hint */}
-        <p className="text-[10px] text-muted-foreground/70 text-center mt-2">
+        {/* Hint — hidden on mobile to save space */}
+        <p className="hidden sm:block text-[10px] text-muted-foreground/70 text-center mt-2">
           Press <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[9px]">Enter</kbd> to send ·{" "}
           <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[9px]">Shift+Enter</kbd> for new line ·{" "}
           Nyaya provides legal information, not legal advice.

@@ -77,36 +77,36 @@ export function ChatWindow() {
       <div className="flex-1 flex flex-col min-w-0 bg-background">
         {/* Professional header bar */}
         <div className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <Button
                 variant="ghost"
                 size="icon"
-                className="tap-target h-9 w-9 text-muted-foreground shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground shrink-0"
                 onClick={() => setHistoryOpen((o) => !o)}
                 aria-label="Toggle history"
               >
                 <PanelLeft className="h-4 w-4" />
               </Button>
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-sm">
-                <Scale className="h-5 w-5 text-primary-foreground" />
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-sm">
+                <Scale className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-sm flex items-center gap-1.5">
+                <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
                   Nyaya AI
-                  <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" title="Online" />
+                  <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-success animate-pulse" title="Online" />
                 </div>
-                <div className="text-[10px] text-muted-foreground truncate">
+                <div className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
                   {isStreaming ? "●●● Typing…" : "Legal Assistant · 26,687 SC judgments"}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               <ModeSwitcher value={mode} onChange={setMode} />
               <Button
                 variant="ghost"
                 size="icon"
-                className="tap-target h-9 w-9 text-muted-foreground hover:text-emergency"
+                className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-emergency"
                 onClick={clear}
                 disabled={messages.length === 0 || isStreaming}
                 aria-label="Clear conversation"
@@ -118,12 +118,12 @@ export function ChatWindow() {
 
           {/* Retrieval sources strip */}
           {retrieval.length > 0 && (
-            <div className="px-3 pb-2 border-t border-border/50 bg-muted/30">
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-1.5">
+            <div className="px-2 sm:px-3 pb-2 border-t border-border/50 bg-muted/30">
+              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground py-1.5">
                 <FileSearch className="h-3 w-3 shrink-0" />
-                <span className="font-medium">Retrieved {retrieval.length} source{retrieval.length !== 1 ? "s" : ""}</span>
+                <span className="font-medium">{retrieval.length} source{retrieval.length !== 1 ? "s" : ""}</span>
                 {usage && !isStreaming && (
-                  <span className="ml-auto flex items-center gap-2 text-[10px]">
+                  <span className="ml-auto flex items-center gap-2 text-[9px] sm:text-[10px]">
                     <span className="inline-flex items-center gap-0.5" title="Approximate token usage">
                       <Zap className="h-2.5 w-2.5 text-accent" />
                       ~{usage.approxTokens} tokens
@@ -131,7 +131,7 @@ export function ChatWindow() {
                   </span>
                 )}
               </div>
-              <div className="flex gap-1.5 overflow-x-auto nyaya-scroll pb-1">
+              <div className="flex gap-1 sm:gap-1.5 overflow-x-auto nyaya-scroll pb-1">
                 {retrieval.map((r, i) => (
                   <span key={i} className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-[10px]">
                     {r.actName?.slice(0, 25) ?? "source"}
@@ -145,18 +145,17 @@ export function ChatWindow() {
 
         {/* Messages — or welcome state */}
         {messages.length === 0 ? (
-          <div className="flex-1 overflow-y-auto nyaya-scroll px-4 py-6">
+          <div className="flex-1 overflow-y-auto nyaya-scroll px-3 sm:px-4 py-4 sm:py-6">
             <div className="max-w-lg mx-auto">
-              <div className="text-center space-y-5 mb-6">
-                <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg mx-auto">
-                  <Scale className="h-8 w-8 text-primary-foreground" />
+              <div className="text-center space-y-4 sm:space-y-5 mb-5">
+                <div className="inline-flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg mx-auto">
+                  <Scale className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Ask Nyaya</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Your AI legal assistant for Indian law. Get cited answers from{" "}
-                    <span className="text-primary font-medium">26,687 Supreme Court judgments</span>{" "}
-                    and verified legal sources.
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground">Ask Nyaya</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Your AI legal assistant for Indian law. Cited answers from{" "}
+                    <span className="text-primary font-medium">26,687 SC judgments</span>.
                   </p>
                 </div>
               </div>
@@ -167,21 +166,21 @@ export function ChatWindow() {
                     <button
                       key={s.q}
                       onClick={() => handleSend(s.q)}
-                      className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 hover:shadow-sm transition-all text-left"
+                      className="group flex items-center gap-2.5 sm:gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 hover:border-primary/40 hover:shadow-sm active:scale-[0.98] transition-all text-left"
                     >
-                      <div className="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 text-primary">
+                      <div className="shrink-0 inline-flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary/10 text-primary">
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{s.category}</div>
-                        <div className="text-sm font-medium text-foreground truncate">{s.q}</div>
+                        <div className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{s.category}</div>
+                        <div className="text-xs sm:text-sm font-medium text-foreground truncate">{s.q}</div>
                       </div>
                       <Sparkles className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-4">
+              <div className="mt-3 sm:mt-4">
                 <DisclaimerBanner compact />
               </div>
             </div>
