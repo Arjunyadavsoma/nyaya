@@ -22,8 +22,8 @@ export function RightsOnArrestCard() {
   const [expanded, setExpanded] = useState(false);
   return (
     <Card className="border-primary/30 overflow-hidden">
-      <CardHeader className="bg-primary text-primary-foreground">
-        <CardTitle className="flex items-center gap-2 text-base">
+      <CardHeader className="bg-primary text-primary-foreground px-4 py-3">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-wrap">
           <Shield className="h-5 w-5" />
           Your Rights on Arrest — Memorise These
           <button

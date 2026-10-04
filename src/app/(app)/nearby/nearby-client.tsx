@@ -111,7 +111,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
   return (
     <div className="space-y-4">
       {/* Always-visible location + search bar */}
-      <div className="sticky top-14 lg:top-0 z-20 bg-background/95 backdrop-blur-md border border-border rounded-xl p-3 space-y-3 shadow-sm">
+      <div className="sticky top-14 lg:top-0 z-20 bg-background/95 backdrop-blur-md border border-border rounded-xl p-2.5 sm:p-3 space-y-2.5 shadow-sm">
         <div className="flex items-center gap-2">
           <Button
             onClick={handleLocate}

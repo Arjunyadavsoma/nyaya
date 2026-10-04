@@ -34,21 +34,21 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function HelplineGrid({ helplines }: { helplines: Helpline[] }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-2">
       {helplines.map((h) => (
         <a
           key={h.number}
           href={`tel:${h.number}`}
-          className={`group rounded-lg border p-3 hover:shadow-md transition-all ${CATEGORY_COLORS[h.category] ?? "border-border bg-card"}`}
+          className={`group rounded-lg border p-2.5 sm:p-3 hover:shadow-md transition-all active:scale-95 ${CATEGORY_COLORS[h.category] ?? "border-border bg-card"}`}
         >
           <div className="flex items-center justify-between mb-1">
             <Phone className="h-4 w-4 text-emergency" />
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wide text-muted-foreground">
               {CATEGORY_LABELS[h.category] ?? h.category}
             </span>
           </div>
-          <div className="text-2xl font-bold text-foreground">{h.number}</div>
-          <div className="text-xs font-medium mt-0.5 leading-tight">{h.label}</div>
+          <div className="text-xl sm:text-2xl font-bold text-foreground">{h.number}</div>
+          <div className="text-[11px] sm:text-xs font-medium mt-0.5 leading-tight">{h.label}</div>
           {h.description && (
             <div className="text-[10px] text-muted-foreground mt-1 leading-snug line-clamp-2">{h.description}</div>
           )}

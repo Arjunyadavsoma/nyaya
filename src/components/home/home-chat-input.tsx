@@ -59,13 +59,13 @@ export function HomeChatInput() {
       </div>
 
       {/* Suggestion chips */}
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-3 flex flex-wrap gap-1.5 max-w-full">
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
             onClick={() => submit(s)}
             className={cn(
-              "text-xs px-2.5 py-1 rounded-full border border-white/20 text-primary-foreground/90 bg-white/5 hover:bg-white/15 hover:border-white/40 transition-colors"
+              "text-[10px] sm:text-xs px-2 py-1 rounded-full border border-white/20 text-primary-foreground/90 bg-white/5 hover:bg-white/15 hover:border-white/40 transition-colors whitespace-nowrap"
             )}
           >
             {s}

@@ -79,7 +79,7 @@ export function PlaybookCard({ playbook }: { playbook: Playbook }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-1 mb-3 overflow-x-auto nyaya-scroll">
+        <div className="flex gap-1 mb-3 overflow-x-auto nyaya-scroll max-w-full pb-1">
           {tabs.map((t) => (
             <button
               key={t.key}

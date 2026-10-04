@@ -93,11 +93,11 @@ export function StationList({
             }
             aria-pressed={onSelect ? isSelected : undefined}
             className={cn(
-              "bg-card border rounded-lg p-3 flex items-start gap-3 transition-colors",
+              "bg-card border rounded-lg p-2.5 sm:p-3 flex items-start gap-2 sm:gap-3 transition-colors",
               isSelected
                 ? "border-primary/40 ring-1 ring-primary/10"
                 : "border-border",
-              onSelect && "hover:border-primary/30 cursor-pointer"
+              onSelect && "hover:border-primary/30 cursor-pointer active:bg-accent/5"
             )}
           >
             <div className="min-w-0 flex-1">

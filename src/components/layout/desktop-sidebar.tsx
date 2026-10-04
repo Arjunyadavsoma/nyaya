@@ -14,7 +14,7 @@ export function DesktopSidebar() {
   const { theme, setTheme } = useTheme();
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 border-r border-border bg-sidebar">
-      <div className="flex items-center gap-2 px-6 h-16 border-b border-sidebar-border">
+      <div className="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border">
         <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground">
           <Scale className="h-5 w-5" />
         </div>

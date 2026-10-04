@@ -36,7 +36,7 @@ export default async function EmergencyPage() {
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emergency to-emergency/85 text-emergency-foreground shadow-xl">
         <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden
              style={{ backgroundImage: "radial-gradient(circle at 30% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        <div className="relative px-6 py-8 sm:px-8 sm:py-10">
+        <div className="relative px-4 py-6 sm:px-8 sm:py-10">
           <div className="flex items-center gap-2 mb-2">
             <ShieldAlert className="h-6 w-6" />
             <span className="text-xs font-bold uppercase tracking-widest opacity-90">In an emergency</span>
@@ -102,9 +102,9 @@ export default async function EmergencyPage() {
         <p className="text-xs text-muted-foreground mb-3">
           Step-by-step guides: what to do, what to say, what NOT to do, what to keep, and which law applies. Cached for offline use.
         </p>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 min-w-0">
           {playbooks.map((p) => (
-            <div key={p.slug} id={p.slug} className="scroll-mt-20">
+            <div key={p.slug} id={p.slug} className="scroll-mt-20 min-w-0">
               <PlaybookCard playbook={p as unknown as Playbook} />
             </div>
           ))}
