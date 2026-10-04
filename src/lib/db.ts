@@ -48,6 +48,11 @@ class LibSqlDb implements DbLike {
     this.client = createClient({ url, authToken: token });
   }
 
+  /** Generate a CUID-like ID (replaces Prisma's @default(cuid())) */
+  private genId(): string {
+    return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+
   private buildWhere(where?: Record<string, unknown>): { sql: string; args: unknown[] } {
     if (!where || typeof where !== 'object') return { sql: '', args: [] };
     const conditions: string[] = [];
@@ -105,6 +110,12 @@ class LibSqlDb implements DbLike {
   }
 
   private async rawInsert(table: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
+    // Auto-generate id if not provided (Prisma's @default(cuid()) replacement)
+    if (!data.id && !data.userId) {
+      data = { id: this.genId(), ...data };
+    } else if (!data.id) {
+      data = { id: this.genId(), ...data };
+    }
     const cols = Object.keys(data);
     const vals = Object.values(data);
     const placeholders = cols.map(() => '?').join(',');
