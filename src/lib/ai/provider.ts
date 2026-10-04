@@ -138,6 +138,7 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
       });
       if (e.status === 401 || e.status === 403) continue;
       if (e.status === 429) continue;
+      if (e.status === 404) continue;  // model not found — try next key/model
       if (e.status && e.status >= 500 && attempt < maxAttempts - 1) continue;
       // Non-retryable
       break;

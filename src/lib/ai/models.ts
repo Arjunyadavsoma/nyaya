@@ -1,8 +1,17 @@
 /**
  * Model routing. Read from env so models can be swapped without code changes.
+ *
+ * Groq deprecated several model names in late 2024. The current production
+ * model names as of 2025 are:
+ *   - llama-3.3-70b-versatile (may show as 404 on some accounts — use fallback)
+ *   - llama-3.1-8b-instant
+ *
+ * If the primary model returns 404, the KeyPool will mark the key as
+ * unhealthy and the RAG fallback will generate a useful answer from
+ * retrieved context.
  */
 export const MODELS = {
-  primary: process.env.GROQ_MODEL_PRIMARY ?? "llama-3.3-70b-versatile",
+  primary: process.env.GROQ_MODEL_PRIMARY ?? "llama-3.1-8b-instant",
   fast: process.env.GROQ_MODEL_FAST ?? "llama-3.1-8b-instant",
 } as const;
 

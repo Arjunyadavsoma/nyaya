@@ -198,6 +198,12 @@ class KeyPool {
         name: "groq.key.failed",
         properties: { key_id: b.keyId, error_code: status, model: b.model },
       });
+    } else if (status === 404) {
+      // Model not found — mark this bucket as unhealthy (model unavailable for this key)
+      // but don't permanently kill the key (it might work with a different model)
+      b.cooldownUntil = Date.now() + 60_000;
+      b.consecutiveFailures = 0;
+      logger.warn(`key ${b.keyId} model ${b.model} not found (404) → 60s cooldown`);
     } else if (status && status >= 500) {
       if (b.consecutiveFailures >= 3) {
         b.cooldownUntil = Date.now() + 30_000;
