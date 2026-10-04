@@ -45,7 +45,7 @@ const POLICE_ICON = L.divIcon({
   "><span style="transform:rotate(45deg);font-size:14px;">🛡️</span></div>`,
   iconSize: [28, 28],
   iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  popupAnchor: [0, -32],
 });
 
 const HIGHLIGHT_ICON = L.divIcon({
@@ -59,7 +59,7 @@ const HIGHLIGHT_ICON = L.divIcon({
   "><span style="transform:rotate(45deg);font-size:16px;">🛡️</span></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 36],
-  popupAnchor: [0, -36],
+  popupAnchor: [0, -40],
 });
 
 const USER_ICON = L.divIcon({

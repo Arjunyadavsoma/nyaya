@@ -211,6 +211,11 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
             userLocation={userLocation}
             onSelect={handleStationSelect}
             selectedId={highlightStationId}
+            onNavigate={(station) => {
+              setHighlightStationId(station.id);
+              setTab("map");
+              setNavigateStation(station);
+            }}
           />
         </TabsContent>
 

@@ -14,6 +14,8 @@ export interface StationListProps {
   onSelect?: (stationId: string) => void;
   /** Currently highlighted station id (for master-detail). */
   selectedId?: string | null;
+  /** Called when the user clicks "Navigate" on a row — opens map app chooser */
+  onNavigate?: (station: Station) => void;
 }
 
 /**
@@ -35,6 +37,7 @@ export function StationList({
   userLocation,
   onSelect,
   selectedId,
+  onNavigate,
 }: StationListProps) {
   // Pre-compute distances once, then sort. useMemo so we don't recompute
   // on every render (haversine is cheap but the list can be long).
@@ -146,16 +149,26 @@ export function StationList({
                   <Phone className="h-4 w-4" aria-hidden />
                 </a>
               )}
-              <a
-                href={navigateUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="tap-target inline-flex items-center justify-center rounded-md border border-border px-2.5 hover:bg-accent transition-colors"
-                aria-label={`Navigate to ${station.name} via OpenStreetMap`}
-              >
-                <Navigation className="h-4 w-4" aria-hidden />
-              </a>
+              {onNavigate ? (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onNavigate(station); }}
+                  className="tap-target inline-flex items-center justify-center rounded-md border border-border px-2.5 hover:bg-accent transition-colors"
+                  aria-label={`Navigate to ${station.name}`}
+                >
+                  <Navigation className="h-4 w-4" aria-hidden />
+                </button>
+              ) : (
+                <a
+                  href={navigateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="tap-target inline-flex items-center justify-center rounded-md border border-border px-2.5 hover:bg-accent transition-colors"
+                  aria-label={`Navigate to ${station.name} via OpenStreetMap`}
+                >
+                  <Navigation className="h-4 w-4" aria-hidden />
+                </a>
+              )}
             </div>
           </div>
         );
