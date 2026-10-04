@@ -109,7 +109,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
   const capped = totalCount != null && totalCount > stations.length;
 
   return (
-    <div className="space-y-4">
+    <>
       {/* Always-visible location + search bar */}
       <div className="sticky top-14 lg:top-0 z-20 bg-background/95 backdrop-blur-md border border-border rounded-xl p-2.5 sm:p-3 space-y-2.5 shadow-sm">
         <div className="flex items-center gap-2">
@@ -259,14 +259,19 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
         </DrawerContent>
       </Drawer>
 
-      {/* Fix 2: Native map app chooser dialog */}
+      {/* Navigate dialog — rendered at the end so it's on top of everything */}
       <NavigateDialog
         station={navigateStation}
         userLocation={userLocation}
         onClose={() => setNavigateStation(null)}
       />
-    </div>
+    </>
   );
+}
+
+// Wrap in fragment so the dialog is a sibling, not a child of the scrollable div
+function NearbyClientWrapper({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
 
 /**
@@ -326,7 +331,7 @@ function NavigateDialog({
 
   return (
     <Dialog open={!!station} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[9999]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Navigation className="h-4 w-4 text-primary" />
