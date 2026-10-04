@@ -1,25 +1,26 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client'
 
 /**
  * Database client — dual mode:
  *
- * LOCAL DEV: Uses local SQLite file via Prisma (DATABASE_URL=file:...)
+ * LOCAL DEV: Uses local SQLite file via PrismaClient
  * PRODUCTION (Vercel): Uses Turso via @prisma/adapter-libsql
  *
- * The schema.prisma has a hardcoded file: URL so Prisma's build-time
- * validation passes. At runtime:
+ * The schema.prisma has url = "file:./db/custom.db" hardcoded so
+ * Prisma's build-time validation passes (sqlite provider only accepts
+ * file: protocol).
  *
- * - If TURSO_DATABASE_URL + TURSO_AUTH_TOKEN are set → use the libSQL adapter
- *   (we delete DATABASE_URL so Prisma doesn't try to validate it)
- * - Otherwise → use local SQLite via PrismaClient directly
+ * At runtime:
+ * - If TURSO_DATABASE_URL + TURSO_AUTH_TOKEN are set → use PrismaLibSQL adapter
+ *   (passing { url, authToken } config — the factory creates the libsql client internally)
+ * - Otherwise → use plain PrismaClient with local SQLite
  *
- * On Vercel, set these env vars:
+ * On Vercel, set:
  *   TURSO_DATABASE_URL=libsql://your-db.turso.io
  *   TURSO_AUTH_TOKEN=eyJhbGciOi...
  *
- * Do NOT set DATABASE_URL to libsql:// on Vercel — Prisma will reject it.
+ * Do NOT set DATABASE_URL on Vercel.
  */
 
 function createPrismaClient(): PrismaClient {
@@ -27,17 +28,16 @@ function createPrismaClient(): PrismaClient {
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
   if (tursoUrl && tursoToken) {
-    // PRODUCTION: Turso via driver adapter
-    // CRITICAL: Delete DATABASE_URL so Prisma doesn't try to validate
-    // it against the sqlite provider (which only accepts file: protocol).
-    // The adapter handles the actual connection.
+    // PRODUCTION: Turso via PrismaLibSQL driver adapter
+    // CRITICAL: PrismaLibSQL is a FACTORY that takes a config object,
+    // NOT a pre-created libsql client. It creates the client internally.
+    // Also delete DATABASE_URL so Prisma doesn't try to validate it.
     delete process.env.DATABASE_URL;
 
-    const libsql = createClient({
+    const adapter = new PrismaLibSQL({
       url: tursoUrl,
       authToken: tursoToken,
     });
-    const adapter = new PrismaLibSQL(libsql);
     return new PrismaClient({ adapter });
   }
 
