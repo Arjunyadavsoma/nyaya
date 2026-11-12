@@ -9,7 +9,7 @@ import { BookOpen, FileText, BookMarked, Info, Scale } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Suspense } from "react";
 
-export const revalidate = 300; // Cache for 5 minutes
+export const dynamic = "force-dynamic"; // DB-backed: never prerender at build time (Vercel has no DB then; ISR payload also exceeded Vercel's 20 MB limit)
 
 interface GlossaryArticleBody {
   term: string;
