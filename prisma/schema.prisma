@@ -475,3 +475,31 @@ model DocumentQa {
 
   @@index([documentId, createdAt])
 }
+
+// ── Drafting & citizen workflows (Stage 5) ────────────────────
+model UserDraft {
+  id           String   @id @default(cuid())
+  userId       String
+  workflowSlug String   // salary-nonpayment | rental-deposit | ...
+  title        String
+  answersJson  String   @default("{}") // intake answers
+  currentText  String   @default("")   // latest draft body
+  status       String   @default("draft") // draft | final | exported
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  versions     DraftVersion[]
+
+  @@index([userId, updatedAt])
+}
+
+model DraftVersion {
+  id        String   @id @default(cuid())
+  draftId   String
+  draft     UserDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  label     String   @default("v1")
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([draftId, createdAt])
+}

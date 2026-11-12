@@ -61,7 +61,7 @@ export default function WorkflowsPage() {
                 <span className="font-medium">Law:</span> {w.law}
               </div>
               <Link
-                href="/drafting"
+                href={`/drafting?workflow=${w.slug}`}
                 className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
                 Start workflow <ArrowRight className="h-3 w-3" />

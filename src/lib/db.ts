@@ -90,6 +90,8 @@ interface DbLike {
   documentAnalysis: FindMany & FindUnique & Crud;
   documentVersion: FindMany & FindUnique & Crud;
   documentQa: FindMany & FindUnique & Crud;
+  userDraft: FindMany & FindUnique & Crud;
+  draftVersion: FindMany & FindUnique & Crud;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
   appSetting: Countable & FindUnique & Crud;
@@ -388,6 +390,18 @@ class LibSqlDb implements DbLike {
     findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DocumentQa', opts?.where),
     findMany: (opts?: QueryOpts) => this.rawQuery('DocumentQa', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' }, take: opts?.take || 20 }),
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DocumentQa', opts.data) : Promise.resolve({}),
+  };
+  userDraft = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('UserDraft', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('UserDraft', { ...opts, orderBy: opts?.orderBy || { updatedAt: 'desc' }, take: opts?.take || 100 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('UserDraft', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('UserDraft', opts.where, opts.data) : Promise.resolve(),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('UserDraft', opts.where) : Promise.resolve(),
+  };
+  draftVersion = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DraftVersion', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('DraftVersion', { ...opts, orderBy: opts?.orderBy || { createdAt: 'asc' }, take: opts?.take || 50 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DraftVersion', opts.data) : Promise.resolve({}),
   };
   appSetting = {
     count: (opts?: { where?: Where }) => this.rawCount('AppSetting', opts?.where),
