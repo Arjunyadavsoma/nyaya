@@ -87,6 +87,7 @@ interface DbLike {
   rateLimitHit: Crud & FindUnique;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
+  appSetting: Countable & FindUnique & Crud;
 }
 
 class LibSqlDb implements DbLike {
@@ -352,6 +353,14 @@ class LibSqlDb implements DbLike {
   };
   contentReview = {
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('ContentReview', opts.data) : Promise.resolve({}),
+  };
+  appSetting = {
+    count: (opts?: { where?: Where }) => this.rawCount('AppSetting', opts?.where),
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('AppSetting', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('AppSetting', opts),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('AppSetting', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('AppSetting', opts.where, opts.data) : Promise.resolve(),
+    upsert: (opts?: { where?: Where; create?: Data; update?: Data }) => opts ? this.rawUpsert('AppSetting', opts) : Promise.resolve({}),
   };
   groqKeyUsage = {
     upsert: (opts?: { where?: Where; create?: Data; update?: Data }) => opts ? this.rawUpsert('GroqKeyUsage', opts) : Promise.resolve({}),

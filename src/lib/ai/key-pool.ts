@@ -7,8 +7,9 @@ import { MODELS, GROQ_LIMITS, type ModelName } from "./models";
 /**
  * Per-(key, model) bucket state. Groq limits are per-model per-key,
  * so N keys × 2 models = 2N independent rate-limit buckets.
+ * Exported for the gateway (read-only views + scoped recording).
  */
-interface KeyState {
+export interface KeyState {
   keyId: string;
   provider: "groq" | "zai";
   rawKey: string;
@@ -322,6 +323,53 @@ class KeyPool {
 
   size(): number {
     return new Set(this.loadedKeys.map((k) => k.id)).size;
+  }
+
+  // ── Gateway v2 accessors (Stage 1) ──────────────────────────
+  // The gateway enumerates buckets itself (capability routing decides the
+  // model), so the pool exposes read-only bucket views + key-scoped
+  // success/error recording instead of acquire().
+
+  /** Any currently-eligible bucket regardless of model (health probes). */
+  async acquireAny(): Promise<KeyState | null> {
+    this.init();
+    const eligible = [...this.buckets.values()].filter(
+      (b) => b.isHealthy && (b.cooldownUntil == null || b.cooldownUntil <= Date.now())
+    );
+    if (eligible.length === 0) return null;
+    return this.selectBest(eligible);
+  }
+
+  /** Eligible (key, model) buckets for a model, best-first. Raw key included — gateway only. */
+  bucketsForModel(model: string): KeyState[] {
+    this.init();
+    return this.eligibleBuckets(model);
+  }
+
+  /** Record success scoped to (keyId, model) — used by the gateway. */
+  recordSuccessByKey(keyId: string, model: string, headers?: Headers): void {
+    const b = this.buckets.get(bucketKey(keyId, model));
+    if (b) this.recordSuccess(b, {}, headers);
+  }
+
+  /** Record an error scoped to (keyId, model) with an explicit cooldown hint. */
+  recordErrorByKey(
+    keyId: string,
+    model: string,
+    err: { status?: number; message: string },
+    retryAfterMs?: number
+  ): void {
+    const b = this.buckets.get(bucketKey(keyId, model));
+    if (!b) return;
+    if (retryAfterMs && err.status === 429) {
+      // Honor the server-provided cooldown exactly (clamped), then delegate
+      // for counters/persistence.
+      b.cooldownUntil = Date.now() + Math.min(Math.max(retryAfterMs, 1_000), 300_000);
+    }
+    const syntheticHeaders = retryAfterMs && err.status === 429
+      ? new Headers({ "retry-after": String(Math.round(retryAfterMs / 1000)) })
+      : undefined;
+    this.recordError(b, err, syntheticHeaders);
   }
 }
 

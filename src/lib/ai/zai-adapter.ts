@@ -44,7 +44,6 @@ export async function createZaiStream(opts: CreateStreamOpts): Promise<PeekableS
   let buffer = "";
   let fullText = "";
   let peeked: StreamChunk | null = null;
-  let firstPeeked = false;
   let streamDone = false;
 
   async function consumeRawChunk(raw: Uint8Array): Promise<StreamChunk | null> {
@@ -104,24 +103,24 @@ export async function createZaiStream(opts: CreateStreamOpts): Promise<PeekableS
 
   const stream: PeekableStream = {
     async peek() {
-      if (firstPeeked && peeked) return peeked;
+      if (peeked) return peeked;
       // Read until we get a non-empty chunk or the stream ends.
       while (!streamDone) {
         const chunk = await readNext();
         if (chunk && (chunk.delta || chunk.finishReason === "stop")) {
           peeked = chunk;
-          firstPeeked = true;
           return peeked;
         }
       }
       peeked = { delta: "" };
-      firstPeeked = true;
       return peeked;
     },
     async next() {
-      // The peeked chunk was already emitted by the provider; skip it.
-      if (firstPeeked && peeked) {
+      // peek() is verify-only: the first next() re-delivers the peeked chunk.
+      if (peeked) {
+        const p = peeked;
         peeked = null;
+        return p;
       }
       return await readNext();
     },

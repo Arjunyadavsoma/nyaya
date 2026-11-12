@@ -91,8 +91,10 @@ export function buildPrompt(opts: {
   message: string;
   history: ChatMsg[];
   context: RetrievedChunk[];
+  /** Response language: en|hi|te (Stage 7). Default en. */
+  language?: string;
 }): ChatMsg[] {
-  const { mode, message, history, context } = opts;
+  const { mode, message, history, context, language = "en" } = opts;
 
   let modeInstruction = "";
   if (mode === "know-the-law") {
@@ -121,9 +123,17 @@ You are simulating a judicial bench FOR EDUCATIONAL PURPOSES ONLY.
 - Never claim to issue a binding order.`;
   }
 
+  const languageInstruction =
+    language === "en"
+      ? ""
+      : `\n\nLANGUAGE: Respond entirely in ${
+          language === "hi" ? "Hindi (हिन्दी, Devanagari script)" : language === "te" ? "Telugu (తెలుగు)" : language
+        }, except: keep Act names, section numbers, statutory citations and URLs exactly as given in the CONTEXT (do not translate legal instrument names). If a legal term has no settled translation, use the English term and add a brief explanation in the response language.`;
+
   const system = `${BASE_GUARDRAILS}
 
 ${modeInstruction}
+${languageInstruction}
 
 ${formatContext(context)}`;
 
