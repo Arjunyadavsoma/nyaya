@@ -8,6 +8,7 @@ import { Scale, Moon, Sun, LogIn } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SearchPalette } from "@/components/common/search-palette";
 import { KeyboardShortcuts } from "@/components/common/keyboard-shortcuts";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 
 export function DesktopSidebar() {
   const pathname = usePathname();
@@ -68,7 +69,8 @@ export function DesktopSidebar() {
           </div>
         ))}
       </nav>
-      <div className="px-3 py-3 border-t border-sidebar-border space-y-1">
+      <div className="px-3 py-3 border-t border-sidebar-border space-y-2">
+        <div className="px-1"><LanguageSwitcher /></div>
         <Link
           href="/login"
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 transition-colors"

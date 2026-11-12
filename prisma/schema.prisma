@@ -555,3 +555,48 @@ model LegalAidBody {
   @@index([level, stateCode])
   @@index([verified])
 }
+
+// ── My Nyaya: personal legal workspace (Stage 7) ──────────────
+// All rows are userId-scoped; every query path filters by owner.
+model Matter {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  category    String   @default("general") // matches workflow categories
+  status      String   @default("open") // open | progress | closed
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events      MatterEvent[]
+  tasks       MatterTask[]
+
+  @@index([userId, updatedAt])
+}
+
+model MatterEvent {
+  id        String   @id @default(cuid())
+  matterId  String
+  matter    Matter   @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  eventDate DateTime
+  kind      String   @default("note") // note | document | draft | research | deadline
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([matterId, eventDate])
+}
+
+model MatterTask {
+  id           String    @id @default(cuid())
+  matterId     String
+  matter       Matter    @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  title        String
+  dueDate      DateTime?
+  done         Boolean   @default(false)
+  doneAt       DateTime?
+  reminderSent Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  @@index([matterId, dueDate])
+  @@index([done, dueDate])
+}

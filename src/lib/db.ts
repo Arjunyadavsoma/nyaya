@@ -83,7 +83,7 @@ interface DbLike {
   user: FindUnique & Crud & FindMany & Countable;
   chatSession: FindMany & Crud;
   chatMessage: Crud;
-  session: FindUnique & Crud & Countable;
+  session: FindUnique & Crud & Countable & FindMany;
   rateLimitHit: Crud & FindUnique;
   researchReport: FindMany & FindUnique & Crud & Countable;
   userDocument: FindMany & FindUnique & Crud & Countable;
@@ -98,6 +98,9 @@ interface DbLike {
   knowledgeAmendment: FindMany & FindUnique & Crud;
   ingestionRun: FindMany & FindUnique & Crud;
   legalAidBody: FindMany & FindUnique & Crud & Countable;
+  matter: FindMany & FindUnique & Crud & Countable;
+  matterEvent: FindMany & FindUnique & Crud;
+  matterTask: FindMany & FindUnique & Crud;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
   appSetting: Countable & FindUnique & Crud;
@@ -352,6 +355,8 @@ class LibSqlDb implements DbLike {
     update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('ChatMessage', opts.where, opts.data) : Promise.resolve(),
   };
   session = {
+    findMany: (opts?: QueryOpts) => this.rawQuery('Session', { ...opts, take: opts?.take ?? 100 }),
+    _rest: undefined,
     findUnique: (opts?: { where?: Where }) => this.rawFindUnique('Session', opts?.where),
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('Session', opts.data) : Promise.resolve({}),
     update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('Session', opts.where, opts.data) : Promise.resolve(),
@@ -438,6 +443,27 @@ class LibSqlDb implements DbLike {
     findMany: (opts?: QueryOpts) => this.rawQuery('IngestionRun', { ...opts, orderBy: opts?.orderBy || { startedAt: 'desc' }, take: opts?.take || 50 }),
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('IngestionRun', opts.data) : Promise.resolve({}),
     update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('IngestionRun', opts.where, opts.data) : Promise.resolve(),
+  };
+  matter = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('Matter', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('Matter', { ...opts, orderBy: opts?.orderBy || { updatedAt: 'desc' }, take: opts?.take || 100 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('Matter', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('Matter', opts.where, opts.data) : Promise.resolve(),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('Matter', opts.where) : Promise.resolve(),
+    count: (opts?: { where?: Where }) => this.rawCount('Matter', opts?.where),
+  };
+  matterEvent = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('MatterEvent', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('MatterEvent', { ...opts, orderBy: opts?.orderBy || { eventDate: 'desc' }, take: opts?.take || 200 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('MatterEvent', opts.data) : Promise.resolve({}),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('MatterEvent', opts.where) : Promise.resolve(),
+  };
+  matterTask = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('MatterTask', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('MatterTask', { ...opts, orderBy: opts?.orderBy || { dueDate: 'asc' }, take: opts?.take || 200 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('MatterTask', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('MatterTask', opts.where, opts.data) : Promise.resolve(),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('MatterTask', opts.where) : Promise.resolve(),
   };
   legalAidBody = {
     findUnique: (opts?: { where?: Where }) => this.rawFindUnique('LegalAidBody', opts?.where),

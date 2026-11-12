@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { LanguageProvider } from "@/lib/i18n/language-context";
 import { AppShell } from "@/components/layout/app-shell";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { OfflineBanner } from "@/components/pwa/offline-banner";
@@ -72,11 +73,13 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
+            <LanguageProvider>
             <OfflineBanner />
             <AppShell>{children}</AppShell>
             <InstallPrompt />
             <Toaster />
             <SonnerToaster position="top-center" richColors />
+            </LanguageProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

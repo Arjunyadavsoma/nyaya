@@ -300,15 +300,36 @@ export async function requireRole(required: Role): Promise<SessionUser> {
   return user;
 }
 
-/** Delete all user data (DPDP Act compliance) and revoke sessions. */
+/** Delete all user data (DPDP Act compliance) and revoke sessions.
+ *  Stage 7: extended to matters, drafts, research reports, and documents
+ *  (DB rows; document FILES are removed by the profile deletion handler
+ *  via the storage-key list fetched before row deletion). */
 export async function deleteUserData(userId: string): Promise<void> {
+  // Collect document storage keys BEFORE deleting rows so files can be purged.
+  let storageKeys: string[] = [];
+  try {
+    const docs = await db.userDocument?.findMany?.({ where: { userId }, take: 500 });
+    storageKeys = (docs ?? []).map((d: { storageKey: string }) => d.storageKey);
+  } catch { /* best-effort */ }
+
   await db.session.updateMany?.({ where: { userId }, data: { revokedAt: new Date() } });
   await db.bookmark.deleteMany?.({ where: { userId } });
   await db.feedback.deleteMany?.({ where: { userId } });
   await db.chatSession.deleteMany?.({ where: { userId } });
   await db.contentReport.deleteMany?.({ where: { userId } });
+  await db.researchReport?.deleteMany?.({ where: { userId } });
+  await db.userDraft?.deleteMany?.({ where: { userId } });
+  await db.userDocument?.deleteMany?.({ where: { userId } });
+  await db.matter?.deleteMany?.({ where: { userId } }); // events/tasks cascade
   await db.profile.deleteMany?.({ where: { userId } });
   await db.user.delete?.({ where: { id: userId } });
+
+  // Purge stored document files (best-effort; DB rows already gone).
+  try {
+    const { deleteDocumentFile } = await import("@/lib/documents/processing");
+    await Promise.all(storageKeys.map((k) => deleteDocumentFile(k).catch(() => {})));
+  } catch { /* module unavailable in some contexts */ }
+
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, "", { ...cookieOpts(), maxAge: 0 });
 }

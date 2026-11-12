@@ -9,6 +9,7 @@ import { NAV_SECTIONS } from "./nav-config";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { SearchPalette } from "@/components/common/search-palette";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 
 export function Header() {
   const pathname = usePathname();
@@ -28,6 +29,7 @@ export function Header() {
       </Link>
       <div className="flex items-center gap-1">
         <SearchPalette />
+        <LanguageSwitcher compact />
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="tap-target inline-flex items-center justify-center rounded-md hover:bg-accent transition-colors"

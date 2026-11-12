@@ -57,6 +57,9 @@ export async function POST(req: NextRequest) {
     );
   }
   const { mode, message, history, sessionId } = parsed.data;
+  // Language-aware responses (Stage 7): read the user's language preference.
+  const langCookie = req.cookies.get("nyaya_lang")?.value;
+  const language = langCookie === "hi" || langCookie === "te" ? langCookie : "en";
 
   // Layer 1: Intent classification
   const { intent, emergencyType } = classifyIntent(message);
