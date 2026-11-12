@@ -85,6 +85,7 @@ interface DbLike {
   chatMessage: Crud;
   session: FindUnique & Crud & Countable;
   rateLimitHit: Crud & FindUnique;
+  researchReport: FindMany & FindUnique & Crud & Countable;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
   appSetting: Countable & FindUnique & Crud;
@@ -353,6 +354,13 @@ class LibSqlDb implements DbLike {
   };
   contentReview = {
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('ContentReview', opts.data) : Promise.resolve({}),
+  };
+  researchReport = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('ResearchReport', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('ResearchReport', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' }, take: opts?.take || 20 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('ResearchReport', opts.data) : Promise.resolve({}),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('ResearchReport', opts.where) : Promise.resolve(),
+    count: (opts?: { where?: Where }) => this.rawCount('ResearchReport', opts?.where),
   };
   appSetting = {
     count: (opts?: { where?: Where }) => this.rawCount('AppSetting', opts?.where),

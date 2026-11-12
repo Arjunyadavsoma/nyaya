@@ -1,38 +1,16 @@
 /**
- * Haversine distance between two geographic coordinates, in kilometres.
- * Earth radius assumed = 6371 km (mean radius). Symmetric: order of points
- * does not affect the result.
- *
- * Used by the Nearby Police module to compute and sort station distances
- * from the user's geolocation. Lives here so it can be unit-tested in
- * isolation and reused by any future map feature.
+ * Haversine distance + human formatting for police-station lookup.
  */
-export function haversineKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const R = 6371; // km
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/**
- * Human-readable distance label.
- * - Under 1 km → metres (e.g. "480 m")
- * - Under 10 km → 1 decimal (e.g. "3.2 km")
- * - 10 km or more → rounded (e.g. "12 km")
- */
 export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} m`;
   if (km < 10) return `${km.toFixed(1)} km`;

@@ -390,3 +390,16 @@ model RateLimitHit {
   @@unique([bucketKey, windowStart])
   @@index([windowStart])
 }
+
+// ── Research reports (Stage 3) ────────────────────────────────
+model ResearchReport {
+  id                 String   @id @default(cuid())
+  userId             String
+  query              String
+  summaryJson        String   @default("{}") // full ResearchReport JSON (capped)
+  searchProviderUsed Boolean  @default(false)
+  aiGenerated        Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

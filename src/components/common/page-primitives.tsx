@@ -185,7 +185,7 @@ export function SectionHeading({
   action,
   className,
 }: {
-  title: string;
+  title: React.ReactNode;
   description?: string;
   action?: React.ReactNode;
   className?: string;
