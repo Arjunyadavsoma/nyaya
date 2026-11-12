@@ -92,6 +92,12 @@ interface DbLike {
   documentQa: FindMany & FindUnique & Crud;
   userDraft: FindMany & FindUnique & Crud;
   draftVersion: FindMany & FindUnique & Crud;
+  legalSource: FindMany & FindUnique & Crud;
+  legalDocument: FindMany & FindUnique & Crud;
+  legalChunk: FindMany & FindUnique & Crud;
+  knowledgeAmendment: FindMany & FindUnique & Crud;
+  ingestionRun: FindMany & FindUnique & Crud;
+  legalAidBody: FindMany & FindUnique & Crud & Countable;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
   appSetting: Countable & FindUnique & Crud;
@@ -402,6 +408,44 @@ class LibSqlDb implements DbLike {
     findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DraftVersion', opts?.where),
     findMany: (opts?: QueryOpts) => this.rawQuery('DraftVersion', { ...opts, orderBy: opts?.orderBy || { createdAt: 'asc' }, take: opts?.take || 50 }),
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DraftVersion', opts.data) : Promise.resolve({}),
+  };
+  legalSource = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('LegalSource', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('LegalSource', opts),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('LegalSource', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('LegalSource', opts.where, opts.data) : Promise.resolve(),
+  };
+  legalDocument = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('LegalDocument', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('LegalDocument', { ...opts, orderBy: opts?.orderBy || { updatedAt: 'desc' } }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('LegalDocument', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('LegalDocument', opts.where, opts.data) : Promise.resolve({}),
+  };
+  legalChunk = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('LegalChunk', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('LegalChunk', opts),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('LegalChunk', opts.data) : Promise.resolve({}),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('LegalChunk', opts.where) : Promise.resolve({}),
+  };
+  knowledgeAmendment = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('KnowledgeAmendment', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('KnowledgeAmendment', { ...opts, orderBy: opts?.orderBy || { amendmentDate: 'desc' } }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('KnowledgeAmendment', opts.data) : Promise.resolve({}),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('KnowledgeAmendment', opts.where) : Promise.resolve(),
+  };
+  ingestionRun = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('IngestionRun', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('IngestionRun', { ...opts, orderBy: opts?.orderBy || { startedAt: 'desc' }, take: opts?.take || 50 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('IngestionRun', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('IngestionRun', opts.where, opts.data) : Promise.resolve(),
+  };
+  legalAidBody = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('LegalAidBody', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('LegalAidBody', { ...opts, orderBy: opts?.orderBy || { name: 'asc' } }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('LegalAidBody', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('LegalAidBody', opts.where, opts.data) : Promise.resolve({}),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('LegalAidBody', opts.where) : Promise.resolve(),
+    count: (opts?: { where?: Where }) => this.rawCount('LegalAidBody', opts?.where),
   };
   appSetting = {
     count: (opts?: { where?: Where }) => this.rawCount('AppSetting', opts?.where),

@@ -503,3 +503,55 @@ model DraftVersion {
 
   @@index([draftId, createdAt])
 }
+
+// ── Stage 6: knowledge-DB extensions ──────────────────────────
+model KnowledgeAmendment {
+  id             String   @id @default(cuid())
+  legalSourceId  String
+  sourceSlug     String
+  description    String   // e.g. "Act 34 of 2024 s.12 substituted '…'"
+  amendmentDate  DateTime?
+  effectiveDate  DateTime?
+  gazetteUrl     String?
+  createdAt      DateTime @default(now())
+
+  @@index([sourceSlug, amendmentDate])
+}
+
+model IngestionRun {
+  id           String   @id @default(cuid())
+  sourceSlug   String
+  kind         String   // act | judgment | guidance
+  status       String   @default("running") // running | done | failed
+  itemsFound   Int      @default(0)
+  itemsAdded   Int      @default(0)
+  itemsUpdated Int      @default(0)
+  errorText    String?
+  startedAt    DateTime @default(now())
+  finishedAt   DateTime?
+
+  @@index([sourceSlug, startedAt])
+}
+
+// ── Stage 6: verified legal-aid directory (NALSA / SLSA / DLSA) ──
+// No fabricated contacts: rows are created only from official sources and
+// flagged unverified until reviewed.
+model LegalAidBody {
+  id            String   @id @default(cuid())
+  level         String   // national | state | district
+  stateCode     String?  // 2-letter code for states; null for national
+  district      String?
+  name          String
+  helpline      String?
+  email         String?
+  address       String?
+  website       String?
+  sourceUrl     String   // where the data came from (provenance)
+  verified      Boolean  @default(false) // admin review flag
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  updatedAt     DateTime @updatedAt
+
+  @@index([level, stateCode])
+  @@index([verified])
+}

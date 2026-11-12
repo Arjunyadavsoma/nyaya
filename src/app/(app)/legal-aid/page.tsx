@@ -22,7 +22,10 @@ export const metadata = {
  * no fabricated lawyer profiles or ratings.
  */
 export default async function LegalAidPage() {
-  const helplines = await db.helpline.findMany({ orderBy: { order: "asc" }, take: 30 });
+  const [helplines, legalAidBodies] = await Promise.all([
+    db.helpline.findMany({ orderBy: { order: "asc" }, take: 30 }),
+    db.legalAidBody.findMany({ where: { verified: true }, orderBy: { name: "asc" }, take: 100 }),
+  ]);
   const legalHelplines = (helplines as Array<{ number: string; label: string; category: string; description?: string | null }>)
     .filter((h) => ["legal", "women", "senior", "child"].includes(h.category));
 
@@ -89,6 +92,34 @@ export default async function LegalAidPage() {
             ))}
           </div>
 
+          {/* SLSA directory from the verified DB */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MapPin className="h-4 w-4 text-primary" /> Your State Legal Services Authority
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-3">
+                Every state has a Legal Services Authority — free aid, lok adalats, and legal awareness camps. Details below are from official listings ({legalAidBodies.length} bodies, provenance-linked).
+              </p>
+              <div className="grid sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto nyaya-scroll pr-1">
+                {legalAidBodies.map((b) => (
+                  <a
+                    key={b.id}
+                    href={b.website ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-border p-2.5 hover:border-primary/40 hover:bg-accent/5 transition-colors"
+                  >
+                    <div className="text-xs font-medium">{b.name}</div>
+                    {b.helpline && <div className="text-[10px] text-primary mt-0.5">☎ {b.helpline}</div>}
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Lawyer discovery — honest state */}
           <Card>
             <CardHeader className="pb-3">
@@ -99,7 +130,7 @@ export default async function LegalAidPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 A lawyer directory with transparent criteria (bar enrolment verified against state bar council
-                records, practice areas, languages) is part of Stage 6. We will not show fabricated profiles,
+                records, practice areas, languages) is planned. We will not show fabricated profiles,
                 ratings, or availability, and we do not take referral commissions.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
