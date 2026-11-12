@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Scale, Moon, Sun, Menu } from "lucide-react";
+import { Scale, Moon, Sun, Menu, LogIn } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { NAV_ITEMS } from "./nav-config";
@@ -74,6 +74,19 @@ export function Header() {
                 })}
               </ul>
             </nav>
+            <div className="mt-6 pt-4 border-t border-border">
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent/50"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in / create account
+              </Link>
+              <p className="px-3 mt-2 text-[11px] leading-snug text-muted-foreground">
+                Optional — keeps bookmarks and chat history across devices.
+              </p>
+            </div>
           </SheetContent>
         </Sheet>
       </div>

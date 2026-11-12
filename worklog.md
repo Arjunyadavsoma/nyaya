@@ -1196,3 +1196,26 @@ Vercel Environment Variables needed:
   GROQ_MODEL_PRIMARY=llama-3.3-70b-versatile
   GROQ_MODEL_FAST=llama-3.1-8b-instant
   NYAYA_USE_ZAI_FALLBACK=true
+
+---
+Task ID: STAGE-0
+Agent: main (ZCode)
+Task: Stage 0 — Stabilization & Security (master prompt V2 §4 P0)
+
+Work Log:
+- Citations rewritten: strict act grammar, verified-only emission, §-fix, garbage rejection (tests cover audit cases).
+- Honest no-provider fallback + providerStatus/aiGenerated streaming + UI badges; fixed acquire() crash.
+- Real auth: scrypt credentials, DB Session table (rotation/expiry/revocation), lockout, guest migration; /api/auth/session; new login UI; simulated OTP removed everywhere.
+- Security headers (CSP/XFO/XCTO/Referrer/Permissions/HSTS) via next.config; CSRF double-submit on admin mutations; role-change session revocation.
+- Rate limit v2: DB-backed RateLimitHit + memory fallback.
+- libsql shim: identifier allowlist + direction validation + WHERE-required guards.
+- SSE structured error envelopes.
+- ignoreBuildErrors removed; all 267 suppressed type errors fixed; tsc clean.
+- Versioned migration chain + turso-upgrades incremental SQL; db:push --accept-data-loss removed.
+- provision-admin.ts replaces hardcoded seed admin.
+- Vitest: 6 suites / 56 tests green; GitHub Actions CI added.
+- Bugs found by tests and fixed: § regex boundary, DV/child-abuse classifier gaps, missing DISASTER_PLAYBOOK, zero-provider crash.
+
+Verification (all run): tsc 0 errors · eslint clean · 56/56 tests · migrate+seed fresh DB · production build exit 0 (type check ACTIVE) · runtime smoke: headers, auth lifecycle, lockout, uniform errors, emergency playbook, honest rag-fallback, CSRF blocking.
+
+Stage Summary: Stage 0 complete. Next: Stage 1 (AI gateway v2 provider registry).

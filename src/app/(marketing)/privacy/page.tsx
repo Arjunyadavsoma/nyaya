@@ -34,10 +34,12 @@ export default function PrivacyPage() {
         </p>
         <ul className="mt-4 list-disc pl-6 space-y-2 text-base leading-relaxed">
           <li>
-            <strong>Guest session cookie.</strong> A randomly-generated UUID stored in an
-            HTTP-only cookie (<code className="text-sm">nyaya_guest</code>) so your bookmarks, chat
-            history, and consent flags survive across visits on the same device. Contains no
-            personally identifying information.
+            <strong>Session cookie.</strong> A randomly-generated opaque token stored in an
+            HTTP-only cookie (<code className="text-sm">nyaya_session</code>). Only a SHA-256 hash
+            of the token is stored server-side, alongside the session&apos;s expiry. It links your
+            bookmarks, chat history, and consent flags across visits on the same device and contains
+            no personally identifying information. Sessions expire after 30 days (or 7 days of
+            inactivity) and are revoked when you sign out.
           </li>
           <li>
             <strong>Chat history (with consent).</strong> When you ask the AI a question and have

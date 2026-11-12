@@ -13,19 +13,41 @@ datasource db {
 
 // ── Users & Auth ──────────────────────────────────────────────
 model User {
-  id           String         @id @default(cuid())
-  email        String?        @unique
-  phone        String?        @unique
-  name         String?
-  role         String         @default("viewer") // viewer|editor|legal_reviewer|superadmin
-  authProvider  String         @default("guest") // guest|credentials|google|phone
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  bookmarks    Bookmark[]
-  chatSessions ChatSession[]
-  feedback     Feedback[]
-  reports      ContentReport[]
-  profile      Profile?
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  phone         String?        @unique
+  name          String?
+  role          String         @default("viewer") // viewer|editor|legal_reviewer|superadmin
+  authProvider  String         @default("guest") // guest|credentials
+  passwordHash  String?        // scrypt "salt:hash" — credentials users only
+  failedLogins  Int            @default(0) // brute-force counter
+  lockedUntil   DateTime?      // lockout expiry
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookmarks     Bookmark[]
+  chatSessions  ChatSession[]
+  feedback      Feedback[]
+  reports       ContentReport[]
+  profile       Profile?
+  sessions      Session[]
+}
+
+// ── DB-backed sessions (Stage 0: expiry, rotation, revocation) ──
+model Session {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique // sha256 of the opaque cookie token
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime  // absolute expiry
+  lastSeenAt  DateTime  @default(now())
+  revokedAt   DateTime? // set on logout/revocation
+  rotatedFrom String?   // previous session id when rotated
+  ip          String?
+  userAgent   String?
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Profile {
@@ -356,4 +378,15 @@ model GroqKeyUsage {
 
   @@unique([keyId, model, date])
   @@index([keyId, date])
+}
+
+// ── DB-backed rate limiting (Stage 0 G5: works across instances) ──
+model RateLimitHit {
+  id         String   @id @default(cuid())
+  bucketKey  String // "chat:<ip>" | "login:<email>" | ...
+  windowStart DateTime
+  count      Int      @default(0)
+
+  @@unique([bucketKey, windowStart])
+  @@index([windowStart])
 }

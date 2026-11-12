@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getUser } from "@/lib/auth/session";
+import { getUser, revokeAllUserSessions } from "@/lib/auth/session";
 import { hasRole, type Role } from "@/lib/auth/roles";
+import { csrfCheck } from "@/lib/utils/csrf";
 
 const VALID_ROLES: Role[] = [
   "viewer",
@@ -14,12 +15,17 @@ const VALID_ROLES: Role[] = [
  * PATCH /api/admin/users
  * Body: { userId, role }
  *
- * Auth: superadmin only. Updates a user's role.
+ * Auth: superadmin only. Updates a user's role. CSRF-checked (Stage 0 G4).
  */
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
+  const csrfErr = csrfCheck(req);
+  if (csrfErr) {
+    return NextResponse.json({ error: { code: csrfErr, message: "Request blocked (CSRF)." } }, { status: 403 });
+  }
+
   const user = await getUser();
   if (!user || !hasRole(user.role, "superadmin")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: { code: "FORBIDDEN", message: "Forbidden" } }, { status: 403 });
   }
 
   let body: { userId?: string; role?: string };
@@ -52,7 +58,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const target = await db.user.findUnique({
+  const target = await db.user.findUnique?.({
     where: { id: userId },
     select: { id: true, role: true },
   });
@@ -63,12 +69,22 @@ export async function PATCH(req: Request) {
     );
   }
 
-  await db.user.update({
+  await db.user.update?.({
     where: { id: userId },
     data: { role },
   });
 
-  await db.auditLog.create({
+  // Security: role changes revoke the target's sessions so the new role
+  // takes effect immediately (no stale elevated session).
+  if (userId !== user.id) {
+    try {
+      await revokeAllUserSessions(userId);
+    } catch {
+      /* revocation is best-effort; the audit trail below records the change */
+    }
+  }
+
+  await db.auditLog.create?.({
     data: {
       actorId: user.id,
       action: "role_change",

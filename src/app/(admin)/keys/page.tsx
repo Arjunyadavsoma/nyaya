@@ -32,7 +32,7 @@ export default async function KeysPage() {
   const today = new Date().toISOString().slice(0, 10);
   const usageRows = await db.groqKeyUsage.findMany({
     where: { date: today },
-    orderBy: [{ keyId: "asc" }, { model: "asc" }],
+    orderBy: { keyId: "asc" },
   });
 
   return (

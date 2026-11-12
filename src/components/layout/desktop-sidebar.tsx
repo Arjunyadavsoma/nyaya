@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav-config";
 import { cn } from "@/lib/utils";
-import { Scale, Moon, Sun } from "lucide-react";
+import { Scale, Moon, Sun, LogIn } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SearchPalette } from "@/components/common/search-palette";
 import { KeyboardShortcuts } from "@/components/common/keyboard-shortcuts";
@@ -56,6 +56,13 @@ export function DesktopSidebar() {
         </ul>
       </nav>
       <div className="px-3 py-3 border-t border-sidebar-border space-y-1">
+        <Link
+          href="/login"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 transition-colors"
+        >
+          <LogIn className="h-4 w-4" />
+          <span>Sign in</span>
+        </Link>
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 transition-colors"

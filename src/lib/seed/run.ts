@@ -159,13 +159,8 @@ async function runSeed() {
   });
   console.log(`[seed] glossary: ${GLOSSARY.length} terms`);
 
-  // Admin user
-  await prisma.user.upsert({
-    where: { email: "admin@nyaya.local" },
-    create: { email: "admin@nyaya.local", name: "Nyaya Admin", role: "superadmin", authProvider: "credentials" },
-    update: { role: "superadmin" },
-  });
-  console.log("[seed] admin user: admin@nyaya.local");
+  // Stage 0 G10: no hardcoded admin account. Use provision-admin.ts.
+  console.log("[seed] admin user: not seeded (use provision-admin.ts to create one securely)");
 
   console.log("[seed] done.");
   await prisma.$disconnect();

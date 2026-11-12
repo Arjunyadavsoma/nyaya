@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth/session";
 import { hasRole, type Role } from "@/lib/auth/roles";
+import { csrfCheck } from "@/lib/utils/csrf";
 
 /**
  * PATCH /api/admin/review
@@ -20,11 +21,17 @@ import { hasRole, type Role } from "@/lib/auth/roles";
  *      - Updates ContentReport.status; no verifiedBy/verifiedAt.
  *
  * In both cases, a ContentReview entry and an AuditLog row are written.
+ * CSRF-checked (Stage 0 G4).
  */
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
+  const csrfErr = csrfCheck(req);
+  if (csrfErr) {
+    return NextResponse.json({ error: { code: csrfErr, message: "Request blocked (CSRF)." } }, { status: 403 });
+  }
+
   const user = await getUser();
   if (!user || !hasRole(user.role, "editor")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: { code: "FORBIDDEN", message: "Forbidden" } }, { status: 403 });
   }
 
   let body: {
@@ -56,7 +63,7 @@ export async function PATCH(req: Request) {
         { status: 400 }
       );
     }
-    const existing = await db.contentReport.findUnique({
+    const existing = await db.contentReport.findUnique?.({
       where: { id: refId },
       select: { id: true, status: true },
     });
@@ -66,11 +73,11 @@ export async function PATCH(req: Request) {
         { status: 404 }
       );
     }
-    await db.contentReport.update({
+    await db.contentReport.update?.({
       where: { id: refId },
       data: { status: action },
     });
-    await db.contentReview.create({
+    await db.contentReview.create?.({
       data: {
         contentType: "report",
         refId,
@@ -79,7 +86,7 @@ export async function PATCH(req: Request) {
         notes: notes ?? null,
       },
     });
-    await db.auditLog.create({
+    await db.auditLog.create?.({
       data: {
         actorId: user.id,
         action: `report.${action}`,
@@ -159,7 +166,7 @@ export async function PATCH(req: Request) {
   }
   await updateContentRow(model, refId, update);
 
-  await db.contentReview.create({
+  await db.contentReview.create?.({
     data: {
       contentType,
       refId,
@@ -168,7 +175,7 @@ export async function PATCH(req: Request) {
       notes: notes ?? null,
     },
   });
-  await db.auditLog.create({
+  await db.auditLog.create?.({
     data: {
       actorId: user.id,
       action: `${contentType}.${action}`,
@@ -224,22 +231,22 @@ async function findContentRow(
 ): Promise<ExistingRow | null> {
   switch (model) {
     case "rightsArticle":
-      return db.rightsArticle.findUnique({
+      return db.rightsArticle.findUnique?.({
         where: { id },
         select: { id: true, status: true },
       });
     case "legalInfoArticle":
-      return db.legalInfoArticle.findUnique({
+      return db.legalInfoArticle.findUnique?.({
         where: { id },
         select: { id: true, status: true },
       });
     case "judge":
-      return db.judge.findUnique({
+      return db.judge.findUnique?.({
         where: { id },
         select: { id: true, status: true },
       });
     case "policeStation":
-      return db.policeStation.findUnique({
+      return db.policeStation.findUnique?.({
         where: { id },
         select: { id: true, status: true },
       });
@@ -253,16 +260,16 @@ async function updateContentRow(
 ): Promise<void> {
   switch (model) {
     case "rightsArticle":
-      await db.rightsArticle.update({ where: { id }, data: update });
+      await db.rightsArticle.update?.({ where: { id }, data: update });
       return;
     case "legalInfoArticle":
-      await db.legalInfoArticle.update({ where: { id }, data: update });
+      await db.legalInfoArticle.update?.({ where: { id }, data: update });
       return;
     case "judge":
-      await db.judge.update({ where: { id }, data: update });
+      await db.judge.update?.({ where: { id }, data: update });
       return;
     case "policeStation":
-      await db.policeStation.update({ where: { id }, data: update });
+      await db.policeStation.update?.({ where: { id }, data: update });
       return;
   }
 }

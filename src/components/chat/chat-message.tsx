@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { User, Scale, ShieldCheck } from "lucide-react";
+import { User, Scale, ShieldCheck, Info } from "lucide-react";
 import type { ChatMessage } from "@/hooks/use-chat";
 import { CitationCard, BookmarkButton } from "./citation-card";
 import { MessageActions } from "./message-actions";
@@ -61,13 +61,23 @@ export function ChatMessageItem({ msg, onBookmark, isBookmarked }: ChatMessageIt
         <Scale className="h-4 w-4 text-accent-foreground" />
       </div>
       <div className="flex flex-col max-w-[80%] sm:max-w-[70%] min-w-0">
-        {/* Name + badge */}
+        {/* Name + badge — honestly reflects how the answer was produced */}
         <div className="flex items-center gap-1.5 mb-1 ml-1">
           <span className="text-xs font-bold text-foreground">Nyaya</span>
-          <span className="inline-flex items-center gap-0.5 text-[9px] text-success bg-success/10 rounded-full px-1.5 py-0.5">
-            <ShieldCheck className="h-2.5 w-2.5" />
-            Verified
-          </span>
+          {msg.providerStatus === "ai" || msg.playbook ? (
+            <span className="inline-flex items-center gap-0.5 text-[9px] text-success bg-success/10 rounded-full px-1.5 py-0.5">
+              <ShieldCheck className="h-2.5 w-2.5" />
+              {msg.playbook ? "Reviewed playbook" : "AI answer"}
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-0.5 text-[9px] text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-500/10 rounded-full px-1.5 py-0.5"
+              title="No AI provider is currently available. This response shows verified sources from Nyaya's local library without AI interpretation."
+            >
+              <Info className="h-2.5 w-2.5" />
+              {msg.providerStatus === "rag-fallback" ? "Sources only — no AI" : "No sources found"}
+            </span>
+          )}
         </div>
 
         {/* Message bubble */}

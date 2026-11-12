@@ -41,7 +41,7 @@ export default async function JudgesPage({ searchParams }: JudgesPageProps) {
 
   const judges = await db.judge.findMany({
     where,
-    orderBy: [{ courtLevel: "asc" }, { appointmentYear: "desc" }, { name: "asc" }],
+    orderBy: { name: "asc" },
   });
 
   return (

@@ -20,6 +20,10 @@ interface ShareButtonProps {
   className?: string;
 }
 
+function canShare(): boolean {
+  return typeof navigator !== "undefined" && typeof navigator.share === "function";
+}
+
 export function ShareButton({ title, href, variant = "icon", className }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -68,7 +72,7 @@ export function ShareButton({ title, href, variant = "icon", className }: ShareB
         <Button
           variant="outline"
           size="sm"
-          onClick={() => (navigator.share ? nativeShare() : setOpen(true))}
+          onClick={() => (canShare() ? nativeShare() : setOpen(true))}
           className={className}
         >
           <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
@@ -89,7 +93,7 @@ export function ShareButton({ title, href, variant = "icon", className }: ShareB
   return (
     <>
       <button
-        onClick={() => (navigator.share ? nativeShare() : setOpen(true))}
+        onClick={() => (canShare() ? nativeShare() : setOpen(true))}
         className="tap-target inline-flex items-center justify-center rounded-md hover:bg-accent transition-colors text-muted-foreground"
         aria-label="Share"
       >

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/nyaya-emporium-platform]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bunx tsc --noEmit
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Unit tests
+        run: bunx vitest run
+
+      - name: Prisma generate + migrate (fresh DB reproducibility)
+        run: |
+          bunx prisma generate
+          bunx prisma migrate deploy
+
+      - name: Seed
+        run: bun run src/lib/seed/run.ts
+
+      - name: Production build (type errors NOT suppressed)
+        run: bun run build
+        env:
+          # Skip provider keys — the build must not depend on AI credentials.
+          NYAYA_USE_ZAI_FALLBACK: "false"

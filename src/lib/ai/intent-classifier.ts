@@ -43,9 +43,17 @@ const EMERGENCY_SIGNALS: { type: EmergencyType; patterns: RegExp[] }[] = [
     ],
   },
   {
+    type: "child-abuse",
+    patterns: [
+      /\b(child.*(abuse|abused|abusing|in danger|missing|kidnapped|molest))\b/i,
+      /\b(1098|childline|child.*exploit)\b/i,
+      /\b(minor.*assault|child.*molested|child.*trafficking)\b/i,
+    ],
+  },
+  {
     type: "domestic-violence",
     patterns: [
-      /\b(domestic violence|husband.*beat|wife.*beat|beat me|hit me|abused|abusing)\b/i,
+      /\b(domestic violence|husband.*(beat|beats|hit|hits)|wife.*(beat|beats|hit|hits)|beat me|beats me|hit me|hits me|abused|abusing)\b/i,
       /\b(dowry|harassment.*in-law|tortured.*home)\b/i,
       /\b(protection.*women|women.*helpline|181)\b/i,
     ],
@@ -78,14 +86,6 @@ const EMERGENCY_SIGNALS: { type: EmergencyType; patterns: RegExp[] }[] = [
     patterns: [
       /\b(flood|flooding|earthquake|cyclone|landslide|tsunami)\b/i,
       /\b(evacuation|disaster|natural calamity)\b/i,
-    ],
-  },
-  {
-    type: "child-abuse",
-    patterns: [
-      /\b(child.*abuse|child.*in danger|child.*missing|child.*kidnapped)\b/i,
-      /\b(1098|childline|child.*exploit)\b/i,
-      /\b(minor.*assault|child.*molested|child.*trafficking)\b/i,
     ],
   },
   {

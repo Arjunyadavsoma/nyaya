@@ -9,12 +9,11 @@ export default async function JudgmentsPage() {
   const total = await db.sCJudgment.count();
 
   // Get year range for the filter
-  const allYears = await db.sCJudgment.findMany({
+  const allYears = (await db.sCJudgment.findMany({
     select: { year: true },
-    distinct: ["year"],
     orderBy: { year: "desc" },
-  });
-  const years = allYears.map((y) => y.year).filter(Boolean) as number[];
+  })) as Array<{ year?: number | null }>;
+  const years = [...new Set(allYears.map((y) => y.year).filter(Boolean))] as number[];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">

@@ -12,13 +12,13 @@ import { db } from "@/lib/db";
  */
 export async function GET() {
   // Most-bookmarked rights articles (by refId matching rights-article slug)
-  const topBookmarks = await db.bookmark.groupBy({
+  const topBookmarks = (await db.bookmark.groupBy?.({
     by: ["refId", "label", "type"],
     where: { type: "rights-article" },
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: 3,
-  });
+  })) as Array<{ refId: string; label: string; type: string; _count: { id: number } }>;
 
   // Recent chat sessions (proxy for "what people are asking about")
   const recentChats = await db.chatSession.findMany({

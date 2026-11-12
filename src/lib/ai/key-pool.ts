@@ -238,7 +238,7 @@ class KeyPool {
   private async persistDailyUsage(b: KeyState, lastError?: string) {
     const date = new Date().toISOString().slice(0, 10);
     try {
-      await db.groqKeyUsage.upsert({
+      await db.groqKeyUsage.upsert?.({
         where: { keyId_model_date: { keyId: b.keyId, model: b.model, date } },
         create: {
           keyId: b.keyId,

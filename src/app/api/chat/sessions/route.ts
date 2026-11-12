@@ -8,7 +8,7 @@ import { getOrCreateUser } from "@/lib/auth/session";
  */
 export async function GET() {
   const user = await getOrCreateUser();
-  const sessions = await db.chatSession.findMany({
+  const sessions = await db.chatSession.findMany?.({
     where: { userId: user.id },
     orderBy: { updatedAt: "desc" },
     take: 30,
@@ -41,6 +41,6 @@ export async function DELETE(req: NextRequest) {
   const user = await getOrCreateUser();
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 422 });
-  await db.chatSession.deleteMany({ where: { id, userId: user.id } });
+  await db.chatSession.deleteMany?.({ where: { id, userId: user.id } });
   return NextResponse.json({ ok: true });
 }

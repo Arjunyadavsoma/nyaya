@@ -33,7 +33,7 @@ export async function createZaiStream(opts: CreateStreamOpts): Promise<PeekableS
   logger.debug("[zai-adapter] creating stream", { msgs: opts.messages.length });
 
   const result = await zai.chat.completions.create({
-    messages: opts.messages,
+    messages: opts.messages as { role: "system" | "user" | "assistant"; content: string }[],
     stream: true,
     temperature: opts.temperature ?? 0.3,
     max_tokens: opts.maxTokens ?? 1500,

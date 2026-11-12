@@ -31,11 +31,17 @@ export interface StreamAnswerOpts {
   signal?: AbortSignal;
 }
 
+export type ProviderStatus = "ai" | "rag-fallback" | "no-sources";
+
 export interface StreamAnswerResult {
   fullText: string;
   citations: ReturnType<typeof validateCitations>["citations"];
   keyId: string;
   disclaimer: string;
+  /** How this answer was produced — surfaced to the UI so it can label honestly. */
+  providerStatus: ProviderStatus;
+  /** True when a live LLM produced the answer (vs. deterministic fallback). */
+  aiGenerated: boolean;
 }
 
 async function createStream(
@@ -77,7 +83,18 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
   let fullText = "";
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const bucket = await keyPool.acquire(model);
+    let bucket;
+    try {
+      bucket = await keyPool.acquire(model);
+    } catch (acquireErr) {
+      // Zero providers configured / all keys exhausted & un-waitable:
+      // do NOT surface this to the user — fall through to the honest
+      // deterministic fallback below (Stage 0 fix: acquire() throwing
+      // used to abort the whole answer with a generic stream error).
+      lastErr = acquireErr;
+      logger.warn("[provider] no available key bucket", { msg: (acquireErr as Error).message });
+      break;
+    }
     try {
       const { stream, headers } = await createStream(
         bucket.provider,
@@ -127,6 +144,8 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
         citations,
         keyId: bucket.keyId,
         disclaimer: "Nyaya provides legal information, not legal advice.",
+        providerStatus: "ai",
+        aiGenerated: true,
       };
     } catch (err) {
       const e = err as Error & { status?: number };
@@ -147,60 +166,73 @@ export async function streamAnswer(opts: StreamAnswerOpts): Promise<StreamAnswer
 
   await analytics.capture({ name: "groq.all_keys_exhausted", properties: { model } });
 
-  // LLM fallback: generate a structured answer from the RAG context directly.
-  // This ensures the user ALWAYS gets a useful answer, even when all LLM
-  // providers are down (Groq 403, z-ai not available on Vercel, etc.)
+  // Deterministic fallback: all LLM providers are unavailable. Produce an
+  // HONEST response — clearly labelled as not AI-generated, showing the
+  // verified sources we did retrieve, and never inventing legal conclusions.
   const fallbackText = generateRagFallback(message, context);
   onToken(fallbackText);
 
-  // DON'T throw — return the fallback text so the chat API can persist it
-  // as a normal assistant message (with citations + disclaimer).
-  // The throw was causing the catch block to fire an error event, making
-  // the UI show "Something went wrong" even though the answer was fine.
-  const { validateCitations } = await import("./citations");
-  const { citations, correctedAnswer } = validateCitations(fallbackText, context);
+  // The fallback quotes retrieved chunk content verbatim and adds no legal
+  // interpretation of its own, so only genuinely matched citations are emitted
+  // (validateCitations drops anything it cannot match to a retrieved source).
+  const { citations } = validateCitations(fallbackText, context);
   return {
     fullText: fallbackText,
     citations,
     keyId: "rag-fallback",
     disclaimer: "Nyaya provides legal information, not legal advice.",
+    providerStatus: context.length > 0 ? "rag-fallback" : "no-sources",
+    aiGenerated: false,
   };
 }
 
 /**
- * Generate a useful answer from RAG context when all LLM providers fail.
- * This formats the retrieved chunks into a readable answer — no LLM needed.
+ * Deterministic answer assembled from RAG context when no LLM provider is
+ * available (Stage 0 honesty fix). Rules:
+ *  - Explicitly states that AI generation is unavailable.
+ *  - Presents the retrieved sources (title + URL) as a reading list.
+ *  - Quotes only short excerpts of retrieved content — no interpretation,
+ *    no synthesis, no unsupported legal conclusions.
+ *  - Always ends with the disclaimer and free-legal-aid pointers.
  */
 function generateRagFallback(
-  query: string,
+  _query: string,
   context: RetrievedChunk[]
 ): string {
   if (context.length === 0) {
     return FALLBACK_RESPONSE + DISCLAIMER;
   }
 
-  // Build a structured answer from the top retrieved chunks
-  let answer = `Here's what I found based on verified legal sources:\n\n`;
+  const lines: string[] = [];
+  lines.push(`> ⚠️ **AI answers are temporarily unavailable** — no AI provider is currently configured or all are over their limits. Below are verified sources relevant to your question, quoted as stored in Nyaya's local library. This is **not** an AI-generated legal analysis.`);
+  lines.push("");
+  lines.push("**Verified sources on this topic:**");
+  lines.push("");
 
-  // Use the top 3 chunks
-  const topChunks = context.slice(0, 3);
-  for (let i = 0; i < topChunks.length; i++) {
-    const chunk = topChunks[i];
-    const actName = chunk.actName || "Relevant law";
-    const sectionNo = chunk.sectionNo ? ` §${chunk.sectionNo}` : "";
-    const sourceUrl = chunk.sourceUrl ? `\n📖 Source: ${chunk.sourceUrl}` : "";
-
-    // Extract the most relevant portion (first 500 chars of content)
-    const content = chunk.content.slice(0, 500).trim();
-
-    answer += `**${i + 1}. ${actName}${sectionNo}**\n\n${content}${sourceUrl}\n\n---\n\n`;
+  for (let i = 0; i < Math.min(3, context.length); i++) {
+    const chunk = context[i];
+    const actName = chunk.actName || "Relevant legal material";
+    const sectionNo = chunk.sectionNo ? ` (Section ${chunk.sectionNo})` : "";
+    const sourceUrl = chunk.sourceUrl ? ` — [source](${chunk.sourceUrl})` : "";
+    const excerpt = chunk.content
+      .split("\n")
+      .slice(0, 6)
+      .join(" ")
+      .slice(0, 420)
+      .trim();
+    lines.push(`**${i + 1}. ${actName}${sectionNo}**${sourceUrl}`);
+    lines.push("");
+    lines.push(`> ${excerpt.replace(/\n/g, " ")}`);
+    lines.push("");
   }
 
-  answer += `**Your Rights & Next Steps:**\n\n`;
-  answer += `• If this is an emergency, call **112** (unified emergency) or **100** (police)\n`;
-  answer += `• For free legal aid, call **NALSA at 15100** or visit nalsa.gov.in\n`;
-  answer += `• Free legal aid is available for women, children, SC/ST, and anyone earning below ₹5 lakh/year\n\n`;
-
-  answer += DISCLAIMER;
-  return answer;
+  lines.push("**To get an AI-assisted answer:** an administrator can configure a free AI provider (a local Ollama model, or a free-tier Gemini/Groq API key). Until then, the sources above and the options below remain fully available.");
+  lines.push("");
+  lines.push("**Free legal help:**");
+  lines.push("• NALSA helpline: **15100** · nalsa.gov.in");
+  lines.push("• Emergency: **112** (unified) · **100** (police)");
+  lines.push("• Free legal aid: women, children, SC/ST, industrial workers, and anyone earning below ₹5 lakh/year");
+  lines.push("");
+  lines.push(DISCLAIMER.replace(/^\n+/, ""));
+  return lines.join("\n");
 }

@@ -21,7 +21,7 @@ export function createPrismaClient(): PrismaClient {
     // Delete it so Prisma falls back to the schema's hardcoded file: URL.
     delete process.env.DATABASE_URL;
     const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
-    const adapter = new PrismaLibSQL(libsql);
+    const adapter = new PrismaLibSQL(libsql as unknown as ConstructorParameters<typeof PrismaLibSQL>[0]);
     return new PrismaClient({ adapter });
   }
 

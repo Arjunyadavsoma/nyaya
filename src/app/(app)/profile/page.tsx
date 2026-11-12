@@ -7,11 +7,13 @@ import { BookmarksList } from "@/components/profile/bookmarks-list";
 import { DataDeletionCard } from "@/components/profile/data-deletion-card";
 import { InitSession } from "@/components/profile/init-session";
 import { RecentlyViewedList } from "@/components/profile/recently-viewed-list";
+import { SignOutButton } from "@/components/profile/sign-out-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Mail, ShieldCheck, CalendarClock, Scale } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -50,9 +52,9 @@ export default async function ProfilePage() {
     );
   }
 
-  let profile = await db.profile.findUnique({ where: { userId: user.id } });
+  let profile = await db.profile.findUnique?.({ where: { userId: user.id } });
   if (!profile) {
-    profile = await db.profile.create({ data: { userId: user.id } });
+    profile = await db.profile.create?.({ data: { userId: user.id } });
   }
 
   const bookmarks = await db.bookmark.findMany({
@@ -108,10 +110,24 @@ export default async function ProfilePage() {
               </Badge>
             )}
           </div>
-          {user.isGuest && (
-            <p className="text-xs text-muted-foreground italic leading-snug mt-2">
-              You&apos;re using Nyaya as a guest. Bookmarks and chat history are saved on this device only.
-            </p>
+          {user.isGuest ? (
+            <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 mt-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground leading-snug">
+                You&apos;re using Nyaya as a guest. Create a free account to keep your
+                bookmarks and chat history across devices — your current activity
+                carries over automatically.
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90"
+              >
+                Sign in / create account
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-2">
+              <SignOutButton />
+            </div>
           )}
         </CardContent>
       </Card>

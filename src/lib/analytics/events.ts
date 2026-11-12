@@ -16,7 +16,7 @@ export async function capture(evt: AnalyticsEvent): Promise<void> {
   // Never log raw secrets; properties are sanitized upstream.
   logger.debug(`[analytics] ${name}`, properties);
   try {
-    await db.auditLog.create({
+    await db.auditLog.create?.({
       data: {
         action: name,
         entityType: "analytics",

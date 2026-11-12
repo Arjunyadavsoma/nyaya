@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   // Update the chat message's `helpful` field if rating is provided
   if (messageId && rating != null) {
     try {
-      await db.chatMessage.update({
+      await db.chatMessage.update?.({
         where: { id: messageId },
         data: { helpful: rating >= 4 },
       });
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const feedback = await db.feedback.create({
+  const feedback = await db.feedback.create?.({
     data: {
       userId: user.id,
       messageId: messageId ?? null,
@@ -59,7 +59,7 @@ export async function GET() {
   } catch {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const feedback = await db.feedback.findMany({
+  const feedback = await db.feedback.findMany?.({
     take: 50,
     orderBy: { createdAt: "desc" },
     include: { user: { select: { name: true, email: true } } },

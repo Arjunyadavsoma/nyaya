@@ -36,7 +36,7 @@ interface InfoArticleSeed {
   sourceUrl: string;
 }
 
-export async function runSeed(prisma: PrismaClient = db) {
+export async function runSeed(prisma: PrismaClient = db as unknown as PrismaClient) {
   console.log("[seed] starting…");
 
   // Helplines
@@ -175,13 +175,14 @@ export async function runSeed(prisma: PrismaClient = db) {
   });
   console.log(`[seed] glossary: ${GLOSSARY.length} terms`);
 
-  // Admin user (superadmin) for development
-  await prisma.user.upsert({
-    where: { email: "admin@nyaya.local" },
-    create: { email: "admin@nyaya.local", name: "Nyaya Admin", role: "superadmin", authProvider: "credentials" },
-    update: { role: "superadmin" },
-  });
-  console.log("[seed] admin user: admin@nyaya.local");
+  // Stage 0 G10: no hardcoded admin account is seeded any more.
+  // Provision the initial superadmin explicitly (never with committed
+  // credentials):
+  //   bun run src/lib/seed/provision-admin.ts
+  // or non-interactively:
+  //   NYAYA_ADMIN_EMAIL=... NYAYA_ADMIN_PASSWORD=... \
+  //     bun run src/lib/seed/provision-admin.ts
+  console.log("[seed] admin user: not seeded (use provision-admin.ts to create one securely)");
 
   console.log("[seed] done.");
 }

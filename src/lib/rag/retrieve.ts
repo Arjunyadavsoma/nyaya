@@ -14,7 +14,7 @@ import { logger } from "@/lib/utils/logger";
 
 interface CorpusDoc {
   id: string;
-  type: "rights" | "info" | "playbook";
+  type: "rights" | "info" | "playbook" | "sc-judgment";
   content: string;
   actName?: string | null;
   sectionNo?: string | null;

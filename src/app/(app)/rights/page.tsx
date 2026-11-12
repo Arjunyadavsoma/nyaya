@@ -34,8 +34,8 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
   const topicCards = (topics as Array<{ slug: string; title: string; icon?: string | null; description?: string | null; id: string }>).map((t) => ({
     slug: t.slug,
     title: t.title,
-    icon: t.icon,
-    description: t.description,
+    icon: t.icon ?? null,
+    description: t.description ?? null,
     articleCount: articleCounts.get(t.id) ?? 0,
   }));
 
@@ -62,7 +62,7 @@ export default async function RightsPage({ searchParams }: RightsPageProps) {
     for (const t of topics as Array<{ id: string; slug: string; title: string }>) {
       topicMap.set(t.id, { slug: t.slug, title: t.title });
     }
-    const resultsWithTopic = (results as Array<{ topicId?: string; slug: string; title: string; summary: string; body: string; actualLaw: string; example?: string | null; whatToDoIfViolated?: string | null; sourceUrl: string }>).map((a) => ({
+    const resultsWithTopic = (results as Array<{ id?: string; topicId?: string; slug: string; title: string; summary: string; body: string; actualLaw: string; example?: string | null; whatToDoIfViolated?: string | null; sourceUrl: string }>).map((a) => ({
       ...a,
       topicSlug: a.topicId ? topicMap.get(a.topicId)?.slug ?? "" : "",
       topicTitle: a.topicId ? topicMap.get(a.topicId)?.title ?? "" : "",

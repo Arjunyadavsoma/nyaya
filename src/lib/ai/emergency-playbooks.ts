@@ -536,6 +536,72 @@ export const SEXUAL_HARASSMENT_PLAYBOOK: EmergencyPlaybook = {
   ],
 };
 
+// Disaster playbook — NDMA guidance for natural calamities (flood,
+// earthquake, cyclone, landslide). Added in Stage 0: the intent classifier
+// routed "disaster" queries but no static playbook existed for them.
+export const DISASTER_PLAYBOOK: EmergencyPlaybook = {
+  id: "disaster",
+  title: "Natural Disaster — Flood, Earthquake, Cyclone",
+  rightNow: [
+    {
+      step: "Call emergency services",
+      action: "Call 112 (unified emergency) or 108 (ambulance) for immediate rescue. Follow official evacuation orders from local authorities without delay.",
+    },
+    {
+      step: "Move to higher ground or open areas",
+      action: "Flood: move to upper floors or elevated ground — never walk or drive through moving water. Earthquake: drop, cover, hold on; then move to open space away from buildings, power lines and glass.",
+    },
+    {
+      step: "Cut electricity and gas if safe",
+      action: "Switch off the main electrical board and gas cylinder before evacuating to prevent fire and electrocution. Do not touch electrical equipment while wet or standing in water.",
+    },
+    {
+      step: "Carry an emergency kit",
+      action: "Take drinking water, dry food, medicines, torch, ID and bank documents in waterproof bags, a power bank, and warm clothing.",
+    },
+    {
+      step: "Do not spread or trust rumours",
+      action: "Follow only official bulletins (NDMA, state disaster authority, district administration). Forwarding unverified 'warnings' is an offence and costs lives.",
+      law: "Section 217, Bharatiya Nyaya Sanhita 2023 (public nuisance by spreading rumours/alarms); Section 79 (false information with intent to cause public mischief)",
+    },
+  ],
+  within24Hours: [
+    {
+      step: "Register for relief and compensation",
+      action: "Report loss to the local revenue office / village officer (Tehsildar, Patwari or equivalent). Get a written acknowledgement — it is the basis for ex-gratia compensation.",
+    },
+    {
+      step: "Replace lost documents",
+      action: "Aadhaar: 1947 or uidai.gov.in. Lost ration card, voter ID and bank documents can be re-issued at the concerned offices; mention the disaster for expedited processing where announced.",
+    },
+    {
+      step: "Insurance and NDRF/SDRF claims",
+      action: "Inform your insurer immediately (most policies require intimation within days). Crop insurance (PMFBY) loss intimation is typically required within 72 hours of the event — confirm the current cut-off with your insurer or bank.",
+    },
+    {
+      step: "Health precautions",
+      action: "Avoid wading through floodwater (leptospirosis/electrocution risk), drink only boiled or chlorinated water, and get any wound treated at a government health centre.",
+    },
+  ],
+  helplines: [
+    { number: "112", purpose: "Unified Emergency (police/fire/medical)" },
+    { number: "108", purpose: "Ambulance" },
+    { number: "1078", purpose: "NDMA Emergency Helpline" },
+    { number: "1070", purpose: "State Relief Commissioner control room" },
+  ],
+  rights: [
+    "Right to ex-gratia relief announced by the State/Centre for disaster deaths and injuries",
+    "Right to NDRF/SDRF assistance for immediate relief (SDRF norms, Ministry of Home Affairs)",
+    "Right to compensation for crop loss under PMFBY where insured",
+    "Right to emergency shelter, food and medical aid at relief camps",
+  ],
+  sources: [
+    { act: "Disaster Management Act 2005", sections: ["51", "54", "55", "58", "67"] },
+    { act: "National Policy on Disaster Management 2009 (NDMA)", sections: [] },
+    { act: "Bharatiya Nyaya Sanhita 2023", sections: ["79", "217"] },
+  ],
+};
+
 // Registry — maps EmergencyType to playbook
 export const PLAYBOOKS: Record<string, EmergencyPlaybook> = {
   "road-accident": ROAD_ACCIDENT_PLAYBOOK,
@@ -546,6 +612,7 @@ export const PLAYBOOKS: Record<string, EmergencyPlaybook> = {
   "fire": FIRE_PLAYBOOK,
   "child-abuse": CHILD_ABUSE_PLAYBOOK,
   "sexual-harassment": SEXUAL_HARASSMENT_PLAYBOOK,
+  "disaster": DISASTER_PLAYBOOK,
 };
 
 export function getPlaybook(type: string | null): EmergencyPlaybook | null {

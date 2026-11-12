@@ -12,7 +12,7 @@ export async function GET(
 ) {
   const user = await getOrCreateUser();
   const { id } = await params;
-  const session = await db.chatSession.findFirst({
+  const session = await db.chatSession.findFirst?.({
     where: { id, userId: user.id },
     include: {
       messages: {

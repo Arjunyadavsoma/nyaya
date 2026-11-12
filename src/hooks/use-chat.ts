@@ -9,7 +9,11 @@ export interface ChatMessage {
   citations?: Citation[];
   pending?: boolean;
   playbook?: unknown; // EmergencyPlaybook — rendered via EmergencyResponse
+  providerStatus?: ProviderStatus;
+  aiGenerated?: boolean;
 }
+
+export type ProviderStatus = "ai" | "rag-fallback" | "no-sources";
 
 export interface Citation {
   actName: string;
@@ -121,6 +125,8 @@ export function useChat() {
                   if (last && last.role === "assistant") {
                     last.id = obj.messageId;
                     last.citations = obj.citations;
+                    last.providerStatus = obj.providerStatus;
+                    last.aiGenerated = obj.aiGenerated;
                   }
                   return next;
                 });
@@ -130,7 +136,9 @@ export function useChat() {
                   approxTokens: obj.approxTokens ?? 0,
                 });
               } else if (obj.type === "error") {
-                setError(obj.message);
+                // Structured error envelope from the server: prefer the safe
+                // message; fall back to a generic line for unexpected shapes.
+                setError(typeof obj.message === "string" ? obj.message : "Something went wrong. Please try again.");
               }
             } catch {
               // partial JSON

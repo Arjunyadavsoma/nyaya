@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { streamAnswer } from "@/lib/ai/provider";
 import { retrieve } from "@/lib/rag/retrieve";
 import { chatRequestSchema } from "@/lib/utils/validators";
-import { rateLimit, clientFingerprint } from "@/lib/utils/rate-limit";
+import { rateLimitAsync, clientFingerprint } from "@/lib/utils/rate-limit";
 import { getOrCreateUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { analytics } from "@/lib/analytics/events";
@@ -27,14 +27,15 @@ export const maxDuration = 60;
  *   data: {"type":"token","text":"..."}\n\n
  *   data: {"type":"citations","citations":[...]}\n\n
  *   data: {"type":"done","messageId":"..."}\n\n
- *   data: {"type":"error","message":"..."}\n\n
+ *   data: {"type":"error","code":"...","message":"..."}\n\n
  */
 export async function POST(req: NextRequest) {
   const fp = clientFingerprint(req);
-  const rl = rateLimit(`chat:${fp}`, 20);
+  // Stage 0 G5: DB-backed limiter (multi-instance safe) with memory fallback.
+  const rl = await rateLimitAsync(`chat:${fp}`, 20);
   if (!rl.ok) {
     return new Response(
-      JSON.stringify({ error: "Rate limit exceeded. Please wait a moment." }),
+      JSON.stringify({ error: { code: "RATE_LIMITED", message: "Rate limit exceeded. Please wait a moment." } }),
       { status: 429, headers: { "Content-Type": "application/json" } }
     );
   }
@@ -50,10 +51,10 @@ export async function POST(req: NextRequest) {
   }
   const parsed = chatRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return new Response(JSON.stringify({ error: parsed.error.flatten() }), {
-      status: 422,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: { code: "VALIDATION_FAILED", message: "Invalid chat request." } }),
+      { status: 422, headers: { "Content-Type": "application/json" } }
+    );
   }
   const { mode, message, history, sessionId } = parsed.data;
 
@@ -64,16 +65,16 @@ export async function POST(req: NextRequest) {
 
   // Create or fetch chat session
   let chatSession = sessionId
-    ? await db.chatSession.findFirst({ where: { id: sessionId, userId: user.id } })
+    ? await db.chatSession.findFirst?.({ where: { id: sessionId, userId: user.id } })
     : null;
   if (!chatSession) {
-    chatSession = await db.chatSession.create({
+    chatSession = await db.chatSession.create?.({
       data: { userId: user.id, mode: intent === "emergency" ? "what-now" : mode, title: message.slice(0, 60) },
     });
   }
 
   // Persist the user message
-  const userMsg = await db.chatMessage.create({
+  const userMsg = await db.chatMessage.create?.({
     data: { sessionId: chatSession.id, role: "user", content: message, mode: intent === "emergency" ? "what-now" : mode },
   });
 
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
 
             // Persist assistant message (the playbook title + summary)
             const assistantText = `Emergency: ${playbook.title}\n\nFollow the steps above. In an emergency, call 112.`;
-            const assistantMsg = await db.chatMessage.create({
+            const assistantMsg = await db.chatMessage.create?.({
               data: {
                 sessionId: chatSession!.id,
                 role: "assistant",
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
           // Send the fallback response as a single token
           send({ type: "token", text: FALLBACK_RESPONSE });
 
-          const assistantMsg = await db.chatMessage.create({
+          const assistantMsg = await db.chatMessage.create?.({
             data: {
               sessionId: chatSession!.id,
               role: "assistant",
@@ -165,6 +166,8 @@ export async function POST(req: NextRequest) {
             citations: [],
             messageId: assistantMsg.id,
             keyId: "fallback",
+            providerStatus: "no-sources",
+            aiGenerated: false,
             retrievalCount: chunks.length,
             answerLength: FALLBACK_RESPONSE.length,
             approxTokens: Math.ceil(FALLBACK_RESPONSE.length / 4),
@@ -191,7 +194,7 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        const assistantMsg = await db.chatMessage.create({
+        const assistantMsg = await db.chatMessage.create?.({
           data: {
             sessionId: chatSession!.id,
             role: "assistant",
@@ -206,6 +209,8 @@ export async function POST(req: NextRequest) {
           citations: result.citations,
           messageId: assistantMsg.id,
           keyId: result.keyId,
+          providerStatus: result.providerStatus,
+          aiGenerated: result.aiGenerated,
           retrievalCount: chunks.length,
           answerLength: result.fullText.length,
           approxTokens: Math.ceil(result.fullText.length / 4) + Math.ceil(message.length / 4),
@@ -214,13 +219,15 @@ export async function POST(req: NextRequest) {
 
         await analytics.capture({
           name: "chat.message_sent",
-          properties: { mode, chunks: chunks.length, key_id: result.keyId },
+          properties: { mode, chunks: chunks.length, key_id: result.keyId, provider_status: result.providerStatus, ai_generated: result.aiGenerated },
           actorId: user.id,
         });
       } catch (err) {
+        // Structured SSE error envelope — never forward internal exception
+        // messages to the client (audit S9). Full detail goes to server logs.
         const e = err as Error;
-        logger.error("[chat] stream failed", { msg: e.message });
-        send({ type: "error", message: e.message });
+        logger.error("[chat] stream failed", { msg: e.message, stack: e.stack?.slice(0, 500) });
+        send({ type: "error", code: "CHAT_STREAM_FAILED", message: "Something went wrong while generating this answer. Please try again." });
       } finally {
         controller.close();
       }
