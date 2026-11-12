@@ -86,6 +86,10 @@ interface DbLike {
   session: FindUnique & Crud & Countable;
   rateLimitHit: Crud & FindUnique;
   researchReport: FindMany & FindUnique & Crud & Countable;
+  userDocument: FindMany & FindUnique & Crud & Countable;
+  documentAnalysis: FindMany & FindUnique & Crud;
+  documentVersion: FindMany & FindUnique & Crud;
+  documentQa: FindMany & FindUnique & Crud;
   contentReview: Crud;
   groqKeyUsage: FindMany & Crud;
   appSetting: Countable & FindUnique & Crud;
@@ -361,6 +365,29 @@ class LibSqlDb implements DbLike {
     create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('ResearchReport', opts.data) : Promise.resolve({}),
     deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('ResearchReport', opts.where) : Promise.resolve(),
     count: (opts?: { where?: Where }) => this.rawCount('ResearchReport', opts?.where),
+  };
+  userDocument = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('UserDocument', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('UserDocument', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' }, take: opts?.take || 100 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('UserDocument', opts.data) : Promise.resolve({}),
+    update: (opts?: { where?: Where; data?: Data }) => opts?.where && opts?.data ? this.rawUpdate('UserDocument', opts.where, opts.data) : Promise.resolve(),
+    deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('UserDocument', opts.where) : Promise.resolve(),
+    count: (opts?: { where?: Where }) => this.rawCount('UserDocument', opts?.where),
+  };
+  documentAnalysis = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DocumentAnalysis', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('DocumentAnalysis', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' }, take: opts?.take || 10 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DocumentAnalysis', opts.data) : Promise.resolve({}),
+  };
+  documentVersion = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DocumentVersion', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('DocumentVersion', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' } }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DocumentVersion', opts.data) : Promise.resolve({}),
+  };
+  documentQa = {
+    findUnique: (opts?: { where?: Where }) => this.rawFindUnique('DocumentQa', opts?.where),
+    findMany: (opts?: QueryOpts) => this.rawQuery('DocumentQa', { ...opts, orderBy: opts?.orderBy || { createdAt: 'desc' }, take: opts?.take || 20 }),
+    create: (opts?: { data?: Data }) => opts?.data ? this.rawInsert('DocumentQa', opts.data) : Promise.resolve({}),
   };
   appSetting = {
     count: (opts?: { where?: Where }) => this.rawCount('AppSetting', opts?.where),

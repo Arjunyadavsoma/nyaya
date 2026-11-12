@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./db/custom.db"
+  url      = env("DATABASE_URL")
 }
 
 // ── Users & Auth ──────────────────────────────────────────────
@@ -402,4 +402,76 @@ model ResearchReport {
   createdAt          DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+// ── Document intelligence (Stage 4) ───────────────────────────
+// Private-by-default: every read/write path MUST filter by userId.
+model UserDocument {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  // Storage key: data/documents/<userId>/<docId>.<ext> — never guessable,
+  // never served publicly; downloads authorize against this row.
+  storageKey    String   @unique
+  originalName  String
+  mimeType      String
+  sizeBytes     Int
+  kind          String   @default("document") // document|image|text
+  status        String   @default("uploaded") // uploaded|extracted|analyzed|failed
+  extractedText String   @default("")          // machine extraction, capped
+  pageCount     Int?
+  ocrUsed       Boolean  @default(false)
+  // Retention: deletedAt drives purge; null = keep until user deletes.
+  deletedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  analyses      DocumentAnalysis[]
+  versions      DocumentVersion[]
+  qa            DocumentQa[]
+
+  @@index([userId, createdAt])
+}
+
+// Structured analysis output (one per analysis run).
+model DocumentAnalysis {
+  id           String   @id @default(cuid())
+  documentId   String
+  document     UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  kind         String // summary|structure
+  summary      String   @default("")
+  partiesJson  String   @default("[]")
+  clausesJson  String   @default("[]")
+  datesJson    String   @default("[]")
+  risksJson    String   @default("[]")
+  aiGenerated  Boolean  @default(false)
+  model        String?
+  createdAt    DateTime @default(now())
+
+  @@index([documentId, createdAt])
+}
+
+// Export/version snapshots of the extracted text (regenerable).
+model DocumentVersion {
+  id         String   @id @default(cuid())
+  documentId String
+  document   UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  label      String   @default("v1")
+  text       String
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, createdAt])
+}
+
+// Grounded Q&A threads per document.
+model DocumentQa {
+  id         String   @id @default(cuid())
+  documentId String
+  document   UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  question   String
+  answer     String
+  aiGenerated Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, createdAt])
 }

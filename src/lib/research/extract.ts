@@ -86,6 +86,27 @@ export function extractHtmlMeta(html: string): { title?: string; description?: s
   };
 }
 
+/**
+ * Resolve a python3 that can import fitz (PyMuPDF). `python3 -I` (isolated
+ * mode) strips the active virtualenv's site-packages, so in venv setups the
+ * venv interpreter must be invoked explicitly. Override with PYMUPDF_PYTHON.
+ */
+async function resolvePython(): Promise<string> {
+  if (process.env.PYMUPDF_PYTHON) return process.env.PYMUPDF_PYTHON;
+  const candidates = [
+    process.env.VIRTUAL_ENV ? `${process.env.VIRTUAL_ENV}/bin/python3` : null,
+    "/home/z/.venv/bin/python3",
+    "python3",
+  ].filter(Boolean) as string[];
+  for (const candidate of candidates) {
+    try {
+      await execFileAsync(candidate, ["-I", "-c", "import fitz"], { timeout: 10_000 });
+      return candidate;
+    } catch { /* try next */ }
+  }
+  return "python3";
+}
+
 /** Extract text from a PDF using PyMuPDF in a subprocess (untrusted-data path). */
 export async function pdfToText(pdfBytes: Uint8Array): Promise<{ text: string; pages: number }> {
   if (pdfBytes.length < 5 || pdfBytes[0] !== 0x25 || pdfBytes[1] !== 0x50) {
@@ -97,7 +118,7 @@ export async function pdfToText(pdfBytes: Uint8Array): Promise<{ text: string; p
     await writeFile(file, pdfBytes);
     // -I keeps python from loading code from the temp dir.
     const { stdout } = await execFileAsync(
-      "python3",
+      await resolvePython(),
       ["-I", "-c", `
 import sys, json, fitz
 doc = fitz.open(${JSON.stringify(file)})

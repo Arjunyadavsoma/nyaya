@@ -34,6 +34,13 @@ export function loadKeys(): LoadedKey[] {
     keys.push(makeRecord(trimmed, "groq"));
   }
 
+  // Pattern 1b: single GROQ_API_KEY (the documented primary variable)
+  const single = process.env.GROQ_API_KEY?.trim();
+  if (single && /^gsk_[A-Za-z0-9]{20,}$/.test(single) && !seen.has(single)) {
+    seen.add(single);
+    keys.push(makeRecord(single, "groq"));
+  }
+
   // Pattern 2: comma-separated
   const csv = process.env.GROQ_API_KEYS;
   if (csv) {

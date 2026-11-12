@@ -26,7 +26,7 @@ describe("htmlToText (never executes scripts)", () => {
 
   it("keeps list structure as bullets", () => {
     const text = htmlToText("<ul><li>File FIR</li><li>Collect evidence</li></ul>");
-    expect(text).toMatch(/•.*File FIR.*•.*Collect evidence/s);
+    expect(text).toMatch(/•[\s\S]*File FIR[\s\S]*•[\s\S]*Collect evidence/);
   });
 });
 
