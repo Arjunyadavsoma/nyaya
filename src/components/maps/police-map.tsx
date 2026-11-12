@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -130,15 +130,24 @@ export function PoliceMap({ stations, userLocation, onLocate, locating, highligh
     : INDIA_CENTER;
   const zoom = userLocation ? 14 : 5;
 
+  // Recenter only when the location fix itself changes — never on every
+  // render (the previous Date.now() trigger re-centered on each render,
+  // yanking the view while the user panned the map).
+  const locKey = userLocation ? `${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}` : "";
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
+  useEffect(() => {
+    if (locKey) setRecenterTrigger((t) => t + 1);
+  }, [locKey]);
+
   return (
     <div
-      className="relative h-[calc(100vh-22rem)] min-h-[350px] md:h-[500px] w-full rounded-xl overflow-hidden border border-border bg-muted"
+      className="relative z-0 h-[calc(100vh-22rem)] min-h-[350px] md:h-[500px] w-full rounded-xl overflow-hidden border border-border bg-muted"
       role="region"
       aria-label="Map of nearby police stations"
     >
       <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} className="h-full w-full" aria-label="Interactive map">
         <MapResizer />
-        <Recenter center={center} zoom={zoom} trigger={userLocation ? Date.now() : 0} />
+        <Recenter center={center} zoom={zoom} trigger={recenterTrigger} />
         <FlyToStation stationId={highlightStationId ?? null} stations={stations} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
