@@ -71,7 +71,7 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${devanagari.variable} font-sans antialiased bg-background text-foreground`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light">
           <QueryProvider>
             <LanguageProvider>
             <OfflineBanner />
