@@ -41,7 +41,7 @@ export const JUDGES = [
     courtName: "Supreme Court of India",
     appointmentYear: 2024,
     education: "BA (Hons) Economics, St. Stephen's College, Delhi; LLB, Campus Law Centre, Delhi.",
-    careerTimeline: "- Enrolled with the Bar Council of Delhi, 1983.\n- Designated Senior Advocate, 2005.\n- Judge, Delhi High Court, 2005.\n- Judge, Supreme Court of India, 2019.\n- 51st Chief Justice of India (11 November 2024 onwards).",
+    careerTimeline: "- Enrolled with the Bar Council of Delhi, 1983.\n- Designated Senior Advocate, 2005.\n- Judge, Delhi High Court, 2005.\n- Judge, Supreme Court of India, 2019.\n- 51st Chief Justice of India (11 November 2024 – 10 November 2025).",
     photoUrl: null,
     officialSourceUrl: "https://www.sci.gov.in/judges",
     notableJudgmentsJson: JSON.stringify([
@@ -67,7 +67,7 @@ export const JUDGES = [
     courtName: "Supreme Court of India",
     appointmentYear: 2019,
     education: "B.Com, Shivaji University; LLB, Shivaji University, Kolhapur.",
-    careerTimeline: "- Enrolled as advocate, 1983.\n- Designated Senior Advocate, 2002.\n- Judge, Bombay High Court, 2003.\n- Judge, Supreme Court of India, 2019.",
+    careerTimeline: "- Enrolled as advocate, 1983.\n- Designated Senior Advocate, 2002.\n- Judge, Bombay High Court, 2003.\n- Judge, Supreme Court of India, 2019.\n- 52nd Chief Justice of India (12 May 2025 – 23 November 2025).",
     photoUrl: null,
     officialSourceUrl: "https://www.sci.gov.in/judges",
     notableJudgmentsJson: JSON.stringify([
@@ -81,7 +81,7 @@ export const JUDGES = [
     courtName: "Supreme Court of India",
     appointmentYear: 2019,
     education: "LLB, Panjab University, Chandigarh.",
-    careerTimeline: "- Enrolled as advocate, 1989.\n- Designated Senior Advocate, 2008.\n- Judge, Punjab and Haryana High Court, 2010.\n- Chief Justice, Himachal Pradesh High Court, 2018.\n- Judge, Supreme Court of India, 2019.",
+    careerTimeline: "- Enrolled as advocate, 1989.\n- Designated Senior Advocate, 2008.\n- Judge, Punjab and Haryana High Court, 2010.\n- Chief Justice, Himachal Pradesh High Court, 2018.\n- Judge, Supreme Court of India, 2019.\n- 53rd Chief Justice of India (24 November 2025 onwards; retires 9 February 2027).",
     photoUrl: null,
     officialSourceUrl: "https://www.sci.gov.in/judges",
     notableJudgmentsJson: JSON.stringify([]),

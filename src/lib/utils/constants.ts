@@ -1,19 +1,9 @@
 /**
  * Nyaya constants — helplines, color tokens, rate limits, legal aid bodies.
+ *
+ * NOTE: AI model ids and Groq rate limits live in src/lib/ai/models.ts
+ * (single source of truth, env-overridable). Do not duplicate them here.
  */
-
-// ── Groq limits (per the spec; used by the KeyPool) ──────────
-export const GROQ_LIMITS = {
-  requestsPerMinute: 30,
-  requestsPerDay: 1000,
-  tokensPerMinute: 15_000,
-} as const;
-
-// ── Model identifiers (env-overridable) ───────────────────────
-export const MODELS = {
-  primary: process.env.GROQ_MODEL_PRIMARY ?? "llama-3.3-70b-versatile",
-  fast: process.env.GROQ_MODEL_FAST ?? "llama-3.1-8b-instant",
-} as const;
 
 // ── Indian emergency helplines (seed list) ───────────────────
 export const HELPLINES = [

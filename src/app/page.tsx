@@ -37,11 +37,12 @@ export default async function HomePage() {
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold leading-tight tracking-tight max-w-3xl">
-            Know your legal rights. In plain language.
+            Legal help for every Indian. In plain language.
           </h1>
           <p className="mt-4 text-base sm:text-lg text-primary-foreground/85 max-w-2xl">
-            Nyaya helps you understand Indian law, handle legal emergencies, find nearby
-            police stations, and access free legal aid — all cited, all offline-ready.
+            Ask an AI assistant with citations, research live official sources, analyse
+            your documents, draft notices and complaints through guided workflows, and
+            track it all in your own workspace — free.
           </p>
           <div className="mt-6">
             <HomeChatInput />
@@ -64,9 +65,9 @@ export default async function HomePage() {
       <section className="max-w-6xl mx-auto px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <QuickAction href="/chat" icon={MessageSquareText} title="Ask AI" desc="Cited legal answers" tone="primary" />
+          <QuickAction href="/workflows" icon={Scale} title="Workflows" desc="Guided step-by-step" tone="default" />
+          <QuickAction href="/documents" icon={BookOpen} title="Documents" desc="Upload & analyse" tone="default" />
           <QuickAction href="/emergency" icon={Siren} title="Emergency" desc="SOS + playbooks" tone="emergency" />
-          <QuickAction href="/rights" icon={Scale} title="Your Rights" desc="13 categories" tone="default" />
-          <QuickAction href="/nearby" icon={MapPin} title="Nearby Police" desc="On a map" tone="default" />
         </div>
       </section>
 
