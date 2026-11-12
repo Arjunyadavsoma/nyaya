@@ -106,6 +106,35 @@ interface DbLike {
   appSetting: Countable & FindUnique & Crud;
 }
 
+/** Tables whose primary key is not an `id` column: never auto-generate `id` on insert. */
+const TABLES_WITHOUT_ID_PK = new Set(["Profile", "AppSetting"]);
+
+/** Tables with a Prisma @updatedAt column (NOT NULL, no DB default): the shim fills it on write. */
+const TABLES_WITH_UPDATED_AT = new Set([
+  "AppSetting",
+  "ChatSession",
+  "DocumentTemplate",
+  "EmergencyScenario",
+  "GroqKeyUsage",
+  "Judge",
+  "LegalAidBody",
+  "LegalDocument",
+  "LegalInfoArticle",
+  "Matter",
+  "PoliceStation",
+  "Profile",
+  "RightsArticle",
+  "User",
+  "UserDocument",
+  "UserDraft",
+]);
+
+/** Encode a JS value as a libsql argument: Date objects become ISO strings. */
+function toInValue(v: unknown): InValue {
+  if (v instanceof Date) return v.toISOString();
+  return v as InValue;
+}
+
 class LibSqlDb implements DbLike {
   private client: Client;
 
@@ -156,9 +185,9 @@ class LibSqlDb implements DbLike {
       if (typeof val === 'object' && val !== null) {
         const v = val as Record<string, unknown>;
         if ('contains' in v) { conditions.push(`"${col}" LIKE ?`); args.push(String(v.contains)); }
-        else if ('equals' in v) { conditions.push(`"${col}" = ?`); args.push(v.equals as InValue); }
+        else if ('equals' in v) { conditions.push(`"${col}" = ?`); args.push(toInValue(v.equals)); }
       } else {
-        conditions.push(`"${col}" = ?`); args.push(val as InValue);
+        conditions.push(`"${col}" = ?`); args.push(toInValue(val));
       }
     }
     return { sql: conditions.join(' AND '), args };
@@ -194,13 +223,18 @@ class LibSqlDb implements DbLike {
   }
 
   private async rawInsert(table: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
-    // Auto-generate id if not provided (Prisma's @default(cuid()) replacement)
-    if (!data.id) {
+    // Auto-generate id if not provided (Prisma's @default(cuid()) replacement),
+// except tables whose primary key is not `id` (Profile, AppSetting).
+    if (!data.id && !TABLES_WITHOUT_ID_PK.has(table)) {
       data = { id: this.genId(), ...data };
+    }
+    // Prisma @updatedAt columns are NOT NULL without a DB default: fill on insert.
+    if (TABLES_WITH_UPDATED_AT.has(table) && data.updatedAt === undefined) {
+      data = { ...data, updatedAt: new Date().toISOString() };
     }
     const tbl = this.assertIdentifier(table);
     const cols = Object.keys(data).map(c => this.assertIdentifier(c));
-    const vals = Object.values(data) as InValue[];
+    const vals = Object.values(data).map(toInValue);
     const placeholders = cols.map(() => '?').join(',');
     await this.client.execute({ sql: `INSERT INTO "${tbl}" (${cols.map(c => `"${c}"`).join(',')}) VALUES (${placeholders})`, args: vals });
     return data;
@@ -208,8 +242,12 @@ class LibSqlDb implements DbLike {
 
   private async rawUpdate(table: string, where: Record<string, unknown>, data: Record<string, unknown>): Promise<void> {
     const tbl = this.assertIdentifier(table);
+    // Mirror Prisma @updatedAt: refresh on every update.
+    if (TABLES_WITH_UPDATED_AT.has(table) && data.updatedAt === undefined) {
+      data = { ...data, updatedAt: new Date().toISOString() };
+    }
     const setCols = Object.keys(data).map(c => `"${this.assertIdentifier(c)}"=?`).join(',');
-    const args: InValue[] = [...Object.values(data)] as InValue[];
+    const args: InValue[] = Object.values(data).map(toInValue);
     const w = this.buildWhere(where);
     if (w.sql) { args.push(...w.args); await this.client.execute({ sql: `UPDATE "${tbl}" SET ${setCols} WHERE ${w.sql}`, args }); }
     else { throw new Error('[db] UPDATE without WHERE is not allowed'); }
@@ -241,8 +279,12 @@ class LibSqlDb implements DbLike {
   /** UPDATE affecting multiple rows (revocations, migrations). */
   private async rawUpdateMany(table: string, where: Record<string, unknown>, data: Record<string, unknown>): Promise<void> {
     const tbl = this.assertIdentifier(table);
+    // Mirror Prisma @updatedAt: refresh on every update.
+    if (TABLES_WITH_UPDATED_AT.has(table) && data.updatedAt === undefined) {
+      data = { ...data, updatedAt: new Date().toISOString() };
+    }
     const setCols = Object.keys(data).map(c => `"${this.assertIdentifier(c)}"=?`).join(',');
-    const args: InValue[] = [...Object.values(data)] as InValue[];
+    const args: InValue[] = Object.values(data).map(toInValue);
     const w = this.buildWhere(where);
     if (!w.sql) throw new Error('[db] updateMany without WHERE is not allowed');
     args.push(...w.args);
