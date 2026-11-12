@@ -44,9 +44,12 @@ export interface NearbyClientProps {
   stations: Station[];
   initialCity?: string;
   totalCount?: number;
+  /** True when the URL carries a state/city/search filter. Without one, the
+      nearest stations (by geolocation) are shown instead. */
+  hasFilter: boolean;
 }
 
-export function NearbyClient({ stations, initialCity, totalCount }: NearbyClientProps) {
+export function NearbyClient({ stations, initialCity, totalCount, hasFilter }: NearbyClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cityFromUrl = searchParams?.get("city") ?? "";
@@ -57,6 +60,8 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
   const [highlightStationId, setHighlightStationId] = useState<string | null>(null);
   const [navigateStation, setNavigateStation] = useState<Station | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
+  const [nearest, setNearest] = useState<Station[] | null>(null);
+  const [nearestLoading, setNearestLoading] = useState(false);
 
   const [cityDraft, setCityDraft] = useState(cityFromUrl || initialCity || "");
   const [lastAppliedCity, setLastAppliedCity] = useState(cityFromUrl || initialCity || "");
@@ -66,7 +71,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
     setCityDraft(appliedCity);
   }
 
-  const userLocation = lat != null && lng != null ? { lat, lng } : null;
+  const userLocation = useMemo(() => (lat != null && lng != null ? { lat, lng } : null), [lat, lng]);
 
   // Auto-request geolocation on mount (always visible)
   useEffect(() => {
@@ -76,9 +81,33 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
     }
   }, [autoLocated, userLocation, loading, request]);
 
+  // No filter active: once we have a location, load the nearest stations.
+  useEffect(() => {
+    if (hasFilter || !userLocation) return;
+    let cancelled = false;
+    setNearestLoading(true);
+    fetch(`/api/nearby?lat=${userLocation.lat}&lng=${userLocation.lng}&limit=50`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("nearby lookup failed"))))
+      .then((data) => {
+        if (!cancelled) setNearest(Array.isArray(data.stations) ? data.stations : []);
+      })
+      .catch(() => {
+        if (!cancelled) setNearest([]);
+      })
+      .finally(() => {
+        if (!cancelled) setNearestLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hasFilter, userLocation]);
+
+  // Stations actually shown: the filtered server list, or the nearest ones.
+  const visibleStations = hasFilter ? stations : (nearest ?? []);
+
   const drawerStation = useMemo(
-    () => stations.find((s) => s.id === drawerStationId) ?? null,
-    [stations, drawerStationId]
+    () => visibleStations.find((s) => s.id === drawerStationId) ?? null,
+    [visibleStations, drawerStationId]
   );
 
   const applyCity = useCallback(
@@ -184,11 +213,41 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
 
       {/* Count */}
       <p className="text-xs text-muted-foreground px-1">
-        Showing {stations.length} of {displayCount.toLocaleString("en-IN")} station{displayCount === 1 ? "" : "s"}
-        {userLocation ? " — sorted by distance. Tap a station to see it on map." : ""}
+        {hasFilter ? (
+          <>
+            Showing {stations.length} of {displayCount.toLocaleString("en-IN")} station{displayCount === 1 ? "" : "s"}
+            {userLocation ? " — sorted by distance. Tap a station to see it on map." : ""}
+          </>
+        ) : nearestLoading ? (
+          "Finding the police stations nearest to you…"
+        ) : nearest ? (
+          <>
+            Showing the {nearest.length} nearest police station{nearest.length === 1 ? "" : "s"} — sorted by distance. Tap a station to see it on map.
+          </>
+        ) : (
+          "Allow location access to see the nearest police stations, or search by city or state above."
+        )}
       </p>
 
+      {/* No filter and no location yet: prompt instead of an empty list. */}
+      {!hasFilter && nearest == null && !nearestLoading && (
+        <div className="rounded-lg border border-dashed border-border bg-muted/20 p-8 text-center">
+          <MapPin className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium">See the police stations nearest to you</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+            Allow location access when asked, pick a state from the chips above, use the search box, or tap &ldquo;Use my location&rdquo;.
+          </p>
+        </div>
+      )}
+      {!hasFilter && nearest == null && nearestLoading && (
+        <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Finding the nearest police stations…
+        </div>
+      )}
+
       {/* Tabs with slide animation */}
+      {(hasFilter || nearest != null) && (
       <Tabs
         value={tab}
         onValueChange={(v) => setTab(v as "list" | "map")}
@@ -207,7 +266,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
 
         <TabsContent value="list" className="mt-3">
           <StationList
-            stations={stations}
+            stations={visibleStations}
             userLocation={userLocation}
             onSelect={handleStationSelect}
             selectedId={highlightStationId}
@@ -221,7 +280,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
 
         <TabsContent value="map" className="mt-3">
           <PoliceMap
-            stations={stations}
+            stations={visibleStations}
             userLocation={userLocation}
             onLocate={handleLocate}
             locating={loading}
@@ -230,6 +289,7 @@ export function NearbyClient({ stations, initialCity, totalCount }: NearbyClient
           />
         </TabsContent>
       </Tabs>
+      )}
 
       {/* Station detail drawer */}
       <Drawer
