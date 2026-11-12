@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useChat } from "@/hooks/use-chat";
 import { ChatMessageList } from "./chat-message";
 import { ChatInput } from "./chat-input";
 import { ChatHistory } from "./chat-history";
 import { ModeSwitcher, type ChatMode } from "./mode-switcher";
-import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldCheck, BookOpen } from "lucide-react";
+import { Sparkles, Trash2, AlertCircle, FileSearch, PanelLeft, Zap, Scale, ShieldCheck, BookOpen, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -24,7 +24,13 @@ export function ChatWindow() {
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [historyOpen, setHistoryOpen] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const autoSentRef = useRef<string | null>(null);
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push("/dashboard-home");
+  };
 
   useEffect(() => {
     const q = searchParams?.get("q");
@@ -76,12 +82,12 @@ export function ChatWindow() {
         {/* Top bar */}
         <header className="flex items-center justify-between gap-2 px-3 sm:px-4 h-14 border-b border-border bg-card/60 backdrop-blur-xl z-30 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <button
-              onClick={() => setHistoryOpen(o => !o)}
+                        <button
+              onClick={handleBack}
               className="h-9 w-9 rounded-lg hover:bg-accent/50 inline-flex items-center justify-center text-muted-foreground transition-colors shrink-0"
-              aria-label="Toggle history"
+              aria-label="Go back"
             >
-              <PanelLeft className="h-[18px] w-[18px]" />
+              <ArrowLeft className="h-[18px] w-[18px]" />
             </button>
             <div className="flex items-center gap-2.5">
               <div className="relative">
@@ -104,6 +110,13 @@ export function ChatWindow() {
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <ModeSwitcher value={mode} onChange={setMode} />
+            <button
+              onClick={() => setHistoryOpen(o => !o)}
+              className="h-9 w-9 rounded-lg hover:bg-accent/50 inline-flex items-center justify-center text-muted-foreground transition-colors shrink-0"
+              aria-label="Chat history"
+            >
+              <PanelLeft className="h-[18px] w-[18px]" />
+            </button>
             <button
               onClick={clear}
               disabled={messages.length === 0 || isStreaming}
