@@ -172,24 +172,11 @@ export default async function NearbyPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      {/* No filter prompt */}
-      {!hasFilter && (
-        <div className="rounded-lg border border-dashed border-border bg-muted/20 p-8 text-center">
-          <MapPin className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm font-medium">Select a state or search to find police stations</p>
-          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-            India has {total.toLocaleString("en-IN")} police stations across {stateList.length} states &amp; UTs.
-            Pick a state from the chips above, use the search box, or click{" "}
-            <strong>&ldquo;My location&rdquo;</strong> on the map tab.
-          </p>
-        </div>
-      )}
-
-      {hasFilter && (
-        <Suspense fallback={null}>
-          <NearbyClient stations={stations} initialCity={cityTrim} totalCount={total} />
-        </Suspense>
-      )}
+      {/* Always mounted: requests location on open and shows the nearest
+          stations first when no search filter is active. */}
+      <Suspense fallback={null}>
+        <NearbyClient stations={stations} initialCity={cityTrim} totalCount={total} hasFilter={hasFilter} />
+      </Suspense>
 
       <DisclaimerBanner />
     </div>
