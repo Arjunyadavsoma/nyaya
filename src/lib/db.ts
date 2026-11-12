@@ -84,7 +84,7 @@ interface DbLike {
   chatSession: FindMany & Crud;
   chatMessage: Crud;
   session: FindUnique & Crud & Countable & FindMany;
-  rateLimitHit: Crud & FindUnique;
+  rateLimitHit: Crud & FindUnique & FindMany;
   researchReport: FindMany & FindUnique & Crud & Countable;
   userDocument: FindMany & FindUnique & Crud & Countable;
   documentAnalysis: FindMany & FindUnique & Crud;
@@ -365,6 +365,7 @@ class LibSqlDb implements DbLike {
     count: (opts?: { where?: Where }) => this.rawCount('Session', opts?.where),
   };
   rateLimitHit = {
+    findMany: (opts?: QueryOpts) => this.rawQuery('RateLimitHit', { ...opts, take: opts?.take ?? 200 }),
     upsert: (opts?: { where?: Where; create?: Data; update?: Data }) => opts ? this.rawUpsert('RateLimitHit', opts) : Promise.resolve({}),
     findUnique: (opts?: { where?: Where }) => this.rawFindUnique('RateLimitHit', opts?.where),
     deleteMany: (opts?: { where?: Where }) => opts?.where ? this.rawDelete('RateLimitHit', opts.where) : Promise.resolve(),

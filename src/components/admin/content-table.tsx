@@ -1,4 +1,5 @@
 "use client";
+import { csrfFetch } from "@/lib/utils/csrf-fetch";
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -128,7 +129,7 @@ export function ContentTable({ rows, contentType, role }: Props) {
     setPendingId(row.id);
     startTransition(async () => {
       try {
-        const res = await fetch("/api/admin/review", {
+        const res = await csrfFetch("/api/admin/review", {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({

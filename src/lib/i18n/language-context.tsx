@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import { DICTS, getDict, type Dict, type Lang } from "./dictionaries";
 
 interface LangCtx {
@@ -14,15 +14,15 @@ const Ctx = createContext<LangCtx>({ lang: "en", dict: DICTS.en, setLang: () => 
 export const LANG_COOKIE = "nyaya_lang";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
-
-  useEffect(() => {
+  // Lazy initializer reads the cookie once on mount (client-only).
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof document === "undefined") return "en";
     const saved = document.cookie
       .split("; ")
       .find((c) => c.startsWith(`${LANG_COOKIE}=`))
       ?.split("=")[1] as Lang | undefined;
-    if (saved && DICTS[saved]) setLangState(saved);
-  }, []);
+    return saved && DICTS[saved] ? saved : "en";
+  });
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);

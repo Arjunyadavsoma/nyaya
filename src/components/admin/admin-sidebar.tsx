@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Scale, ArrowLeft, LayoutDashboard, FileText, KeyRound, Flag, Users } from "lucide-react";
+import { Scale, ArrowLeft, LayoutDashboard, FileText, KeyRound, Flag, Users, Server } from "lucide-react";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ const NAV: { href: string; label: string; icon: typeof LayoutDashboard; minRole:
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, minRole: "editor" },
   { href: "/content", label: "Content", icon: FileText, minRole: "editor" },
   { href: "/keys", label: "Key Health", icon: KeyRound, minRole: "editor" },
+  { href: "/system", label: "System", icon: Server, minRole: "editor" },
   { href: "/reports", label: "Reports", icon: Flag, minRole: "editor" },
   { href: "/users", label: "Users", icon: Users, minRole: "superadmin" },
 ];
