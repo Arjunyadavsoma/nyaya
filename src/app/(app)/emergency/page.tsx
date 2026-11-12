@@ -8,7 +8,7 @@ import { ShieldAlert, BookOpen, Phone, Siren, LockKeyhole, Car, Home, Globe, Bab
 import type { LucideIcon } from "lucide-react";
 import { Suspense } from "react";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic"; // DB-backed: never prerender at build time (Vercel has no DB then; ISR payload also exceeded Vercel's 20 MB limit)
 
 const QUICK_TILES: { slug: string; label: string; icon: LucideIcon; tone: string }[] = [
   { slug: "arrest", label: "Arrest", icon: LockKeyhole, tone: "border-primary/40 bg-primary/5 text-primary" },
