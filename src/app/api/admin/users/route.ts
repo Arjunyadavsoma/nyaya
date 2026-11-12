@@ -17,6 +17,9 @@ const VALID_ROLES: Role[] = [
  *
  * Auth: superadmin only. Updates a user's role. CSRF-checked (Stage 0 G4).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function PATCH(req: NextRequest) {
   const csrfErr = csrfCheck(req);
   if (csrfErr) {

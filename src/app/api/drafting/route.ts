@@ -5,6 +5,9 @@ import { rateLimitAsync, clientFingerprint } from "@/lib/utils/rate-limit";
 import { WORKFLOWS, getWorkflow, fillTemplate, DRAFT_DISCLAIMER } from "@/lib/drafting/workflows";
 import { logger } from "@/lib/utils/logger";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 
 /**

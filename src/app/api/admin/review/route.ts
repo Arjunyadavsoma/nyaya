@@ -23,6 +23,9 @@ import { csrfCheck } from "@/lib/utils/csrf";
  * In both cases, a ContentReview entry and an AuditLog row are written.
  * CSRF-checked (Stage 0 G4).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function PATCH(req: NextRequest) {
   const csrfErr = csrfCheck(req);
   if (csrfErr) {

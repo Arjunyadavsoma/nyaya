@@ -9,6 +9,9 @@ import { analytics } from "@/lib/analytics/events";
  * Records user feedback (helpful/not-helpful + optional comment) on a chat message.
  * Body: { messageId?, rating?, comment? }
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const user = await getOrCreateUser();
   const body = await req.json().catch(() => null);

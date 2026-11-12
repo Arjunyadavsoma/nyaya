@@ -6,6 +6,9 @@ import { getOrCreateUser } from "@/lib/auth/session";
  * GET /api/chat/sessions/[id]
  * Returns a chat session with all its messages (oldest first).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

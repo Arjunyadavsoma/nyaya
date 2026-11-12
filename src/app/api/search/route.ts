@@ -6,6 +6,9 @@ import { db } from "@/lib/db";
  * Global search across rights articles, legal info, playbooks, judges, templates.
  * Returns up to 8 results per type, sorted by relevance (contains match).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const q = new URL(req.url).searchParams.get("q")?.trim();
   if (!q || q.length < 2) {

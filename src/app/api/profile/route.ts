@@ -13,6 +13,9 @@ const profilePatchSchema = z.object({
  * GET /api/profile — returns the user's profile + user fields.
  * Creates a guest session when absent (preserved existing behaviour).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getOrCreateUser();
 

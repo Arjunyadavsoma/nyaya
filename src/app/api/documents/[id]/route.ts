@@ -5,6 +5,9 @@ import { analyzeDocument, answerDocumentQuestion } from "@/lib/documents/analysi
 import { rateLimitAsync, clientFingerprint } from "@/lib/utils/rate-limit";
 import { classifyDocument } from "@/lib/documents/processing";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 

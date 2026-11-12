@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getUser } from "@/lib/auth/session";
 import { newCsrfToken, CSRF_COOKIE } from "@/lib/utils/csrf";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 
 /**

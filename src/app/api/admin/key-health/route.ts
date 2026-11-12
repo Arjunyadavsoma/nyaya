@@ -13,6 +13,9 @@ import { recentUsageRecords } from "@/lib/ai/gateway";
  * records (admin diagnostics — Stage 1). NEVER includes raw key values —
  * only their 8-hex hashed IDs.
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getUser();
   if (!user || !hasRole(user.role, "editor")) {

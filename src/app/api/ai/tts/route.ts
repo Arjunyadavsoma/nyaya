@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import { rateLimit, clientFingerprint } from "@/lib/utils/rate-limit";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 export const maxDuration = 30;
 

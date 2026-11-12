@@ -6,6 +6,9 @@ import { getOrCreateUser } from "@/lib/auth/session";
  * GET /api/chat/sessions
  * Returns the current user's chat sessions, most recent first.
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getOrCreateUser();
   const sessions = await db.chatSession.findMany?.({

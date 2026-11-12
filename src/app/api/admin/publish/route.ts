@@ -13,6 +13,9 @@ import { csrfCheck } from "@/lib/utils/csrf";
  * Reuses the same MODEL_MAP as /api/admin/review. Playbooks and templates
  * (which have no status column) are rejected. CSRF-checked (Stage 0 G4).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const csrfErr = csrfCheck(req);
   if (csrfErr) {

@@ -10,6 +10,9 @@ import { logger } from "@/lib/utils/logger";
 import { analytics } from "@/lib/analytics/events";
 import crypto from "crypto";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 

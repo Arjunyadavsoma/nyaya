@@ -11,6 +11,9 @@ import { classifyIntent } from "@/lib/ai/intent-classifier";
 import { getPlaybook, type EmergencyPlaybook } from "@/lib/ai/emergency-playbooks";
 import { FALLBACK_RESPONSE } from "@/lib/ai/prompts";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 

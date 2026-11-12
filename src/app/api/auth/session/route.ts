@@ -6,6 +6,9 @@ import { db } from "@/lib/db";
 import { analytics } from "@/lib/analytics/events";
 import { logger } from "@/lib/utils/logger";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 
 const credentialsSchema = z.object({

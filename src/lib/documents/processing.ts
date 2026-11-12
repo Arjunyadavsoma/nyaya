@@ -79,6 +79,11 @@ function intEnv(name: string, fallback: number): number {
 
 /** Storage layout: <root>/<userId>/<docId>.<ext> — server-generated keys only. */
 export function docStorageRoot(): string {
+  // Serverless platforms (Vercel) have a read-only FS except /tmp.
+  const isServerless = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
+  if (isServerless) {
+    return process.env.DOC_STORAGE_DIR ?? path.join("/tmp", "nyaya-documents");
+  }
   return process.env.DOC_STORAGE_DIR ?? path.join(process.cwd(), "data", "documents");
 }
 

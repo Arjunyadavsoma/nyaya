@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth/session";
 import { rateLimitAsync, clientFingerprint } from "@/lib/utils/rate-limit";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 
 /**

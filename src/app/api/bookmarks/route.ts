@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth/session";
 import { bookmarkSchema } from "@/lib/utils/validators";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const user = await getOrCreateUser();
   const body = await req.json().catch(() => null);

@@ -7,6 +7,9 @@ import { hasRole } from "@/lib/auth/roles";
  * GET /api/admin/audit
  * Protected: editor+. Returns the most recent 50 audit-log rows, newest first.
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getUser();
   if (!user || !hasRole(user.role, "editor")) {

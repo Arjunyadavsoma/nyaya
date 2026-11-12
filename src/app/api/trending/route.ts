@@ -10,6 +10,9 @@ import { db } from "@/lib/db";
  *
  * Falls back to curated "popular" picks if there's insufficient engagement data.
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   // Most-bookmarked rights articles (by refId matching rights-article slug)
   const topBookmarks = (await db.bookmark.groupBy?.({

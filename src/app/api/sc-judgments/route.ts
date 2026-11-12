@@ -5,6 +5,9 @@ import { db } from "@/lib/db";
  * GET /api/sc-judgments?q=...&year=...&page=...&pageSize=...
  * Search 26,687 Supreme Court judgments (1950–2024).
  */
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim();

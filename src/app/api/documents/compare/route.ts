@@ -5,6 +5,9 @@ import { readDocumentFile } from "@/lib/documents/processing";
 import { compareDocuments } from "@/lib/documents/analysis";
 import { logger } from "@/lib/utils/logger";
 
+// Serverless: never cache route output (DB-backed responses)
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
